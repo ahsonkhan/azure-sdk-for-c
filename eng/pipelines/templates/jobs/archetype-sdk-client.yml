@@ -1,56 +1,55 @@
 jobs:
-- job: BuildTest
+- job: Validate
   strategy:
     matrix:
-      Linux_x64_Build:
+      Build Linux x64:
         vm.image: 'ubuntu-18.04'
         vcpkg.deps: 'curl[ssl]'
         VCPKG_DEFAULT_TRIPLET: 'x64-linux'
-        UNIT_TESTING: OFF
-      Win_x86_Build:
+      Build Win x86:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl]'
         VCPKG_DEFAULT_TRIPLET: 'x86-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: Win32
-        UNIT_TESTING: OFF
-      Win_x64_Build:
+      Build Win x64:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl]'
         VCPKG_DEFAULT_TRIPLET: 'x64-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: x64
-        UNIT_TESTING: OFF
-      MacOS_x64_Build:
+      Build MacOS x64:
         vm.image: 'macOS-10.14'
         vcpkg.deps: 'curl[ssl]'
         VCPKG_DEFAULT_TRIPLET: 'x64-osx'
-        UNIT_TESTING: OFF
 
-      Linux_x64_Test:
+      # Test matrix should be the same as build matrix but includes
+      # `UNIT_TESTING: ON`, installs test dependencies, and runs tests
+      Test Linux x64:
         vm.image: 'ubuntu-18.04'
         vcpkg.deps: 'curl[ssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-linux'
         UNIT_TESTING: ON
-      Win_x86_Test:
+      Test Win x86:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x86-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: Win32
         UNIT_TESTING: ON
-      Win_x64_Test:
+      Test Win x64:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: x64
         UNIT_TESTING: ON
-      MacOS_x64_Test:
+      Test MacOS x64:
         vm.image: 'macOS-10.14'
         vcpkg.deps: 'curl[ssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-osx'
         UNIT_TESTING: ON
+
   pool:
     vmImage: $(vm.image)
   steps:
@@ -104,6 +103,7 @@ jobs:
       cmakeArgs: --build .
     displayName: cmake build
 
+  # Only run ctest if UNIT_TESTING is 'ON'
   - script: |
       ctest -C Debug
     workingDirectory: build
