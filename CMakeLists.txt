@@ -4,6 +4,7 @@
 cmake_minimum_required (VERSION 3.12)
 
 option(WARNINGS_AS_ERRORS "Treat compiler warnings as errors" ON)
+option(UNIT_TESTING "Build unit test projects" OFF)
 
 if(DEFINED ENV{VCPKG_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake"
@@ -27,4 +28,7 @@ add_subdirectory(sdk/transport_policies/curl)
 add_subdirectory(sdk/keyvault/keyvault)
 add_subdirectory(sdk/storage/blobs)
 # add_subdirectory(sdk/storage/ustorageclient)
-add_subdirectory(sdk/core/core/test)
+if (UNIT_TESTING)
+  add_subdirectory(sdk/core/core/test)
+endif()
+
