@@ -34,14 +34,14 @@ jobs:
         UNIT_TESTING: ON
       Win_x86_Test:
         vm.image: 'windows-2019'
-        vcpkg.deps: 'curl[wins cmockasl]'
+        vcpkg.deps: 'curl[winssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x86-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: Win32
         UNIT_TESTING: ON
       Win_x64_Test:
         vm.image: 'windows-2019'
-        vcpkg.deps: 'curl[wins cmockasl]'
+        vcpkg.deps: 'curl[winssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-windows-static'
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: x64
