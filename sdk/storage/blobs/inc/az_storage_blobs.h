@@ -5,6 +5,7 @@
 #define _az_STORAGE_BLOBS_H
 
 #include <az_config.h>
+#include <az_context.h>
 #include <az_contract_internal.h>
 #include <az_credentials.h>
 #include <az_http.h>
@@ -48,8 +49,8 @@ typedef struct {
   az_span option;
 } az_storage_blobs_blob_upload_options;
 
-AZ_NODISCARD az_storage_blobs_blob_client_options
-az_storage_blobs_blob_client_options_default(az_http_transport_options const * http_transport_options);
+AZ_NODISCARD az_storage_blobs_blob_client_options az_storage_blobs_blob_client_options_default(
+    az_http_transport_options const * http_transport_options);
 
 AZ_NODISCARD AZ_INLINE az_storage_blobs_blob_upload_options
 az_storage_blobs_blob_upload_options_default() {
@@ -72,6 +73,7 @@ typedef struct {
  */
 AZ_NODISCARD az_result az_storage_blobs_blob_upload(
     az_storage_blobs_blob_client * client,
+    az_context * context,
     az_span content, /* Buffer of content*/
     az_storage_blobs_blob_upload_options * options,
     az_http_response * response);

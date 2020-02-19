@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
+#include <az_context.h>
 #include <az_credentials.h>
 #include <az_curl.h>
 #include <az_http.h>
@@ -84,6 +85,7 @@ int main() {
 
   az_result const create_result = az_keyvault_keys_key_create(
       &client,
+      &az_context_app,
       AZ_SPAN_FROM_STR("test-new-key"),
       az_keyvault_web_key_type_rsa(),
       &key_options,
@@ -105,7 +107,7 @@ int main() {
 
   /******************  GET KEY latest ver ******************************/
   az_result get_key_result = az_keyvault_keys_key_get(
-      &client, AZ_SPAN_FROM_STR("test-new-key"), az_span_null(), &http_response);
+      &client, &az_context_app, AZ_SPAN_FROM_STR("test-new-key"), az_span_null(), &http_response);
 
   if (az_failed(get_key_result)) {
     printf("Failed to get key");
@@ -137,6 +139,7 @@ int main() {
   /*********************  Create a new key version (use default options) *************/
   az_result const create_version_result = az_keyvault_keys_key_create(
       &client,
+      &az_context_app,
       AZ_SPAN_FROM_STR("test-new-key"),
       az_keyvault_web_key_type_rsa(),
       NULL,
@@ -160,7 +163,7 @@ int main() {
 
   /******************  GET KEY previous ver ******************************/
   az_result const get_key_prev_ver_result = az_keyvault_keys_key_get(
-      &client, AZ_SPAN_FROM_STR("test-new-key"), version, &http_response);
+      &client, &az_context_app, AZ_SPAN_FROM_STR("test-new-key"), version, &http_response);
 
   if (az_failed(get_key_prev_ver_result)) {
     printf("Failed to get previous version of the key");
@@ -169,8 +172,8 @@ int main() {
   printf("\n\n*********************************\nGet Key previous Ver: \n%s", response_buffer);
 
   /******************  DELETE KEY ******************************/
-  az_result const delete_key_result
-      = az_keyvault_keys_key_delete(&client, AZ_SPAN_FROM_STR("test-new-key"), &http_response);
+  az_result const delete_key_result = az_keyvault_keys_key_delete(
+      &client, &az_context_app, AZ_SPAN_FROM_STR("test-new-key"), &http_response);
 
   if (az_failed(delete_key_result)) {
     printf("Failed to delete key");
@@ -188,7 +191,7 @@ int main() {
 
   /******************  GET KEY (should return failed response ) ******************************/
   az_result get_key_again_result = az_keyvault_keys_key_get(
-      &client, AZ_SPAN_FROM_STR("test-new-key"), az_span_null(), &http_response);
+      &client, &az_context_app, AZ_SPAN_FROM_STR("test-new-key"), az_span_null(), &http_response);
 
   if (az_failed(get_key_again_result)) {
     printf("Failed to get key (2)");

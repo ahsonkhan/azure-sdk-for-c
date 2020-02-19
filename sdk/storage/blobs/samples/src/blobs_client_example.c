@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
+#include <az_context.h>
 #include <az_credentials.h>
 #include <az_curl.h>
 #include <az_http.h>
@@ -44,7 +45,12 @@ az_storage_blobs_blob_download(az_storage_blobs_blob_client * client, az_http_re
   // TODO: define max URL size
   _az_http_request hrb;
   AZ_RETURN_IF_FAILED(az_http_request_init(
-      &hrb, az_http_method_get(), request_url_span, request_headers_span, az_span_null()));
+      &hrb,
+      &az_context_app,
+      az_http_method_get(),
+      request_url_span,
+      request_headers_span,
+      az_span_null()));
 
   // start pipeline
   return az_http_pipeline_process(&client->_internal.pipeline, &hrb, response);
@@ -66,7 +72,12 @@ az_storage_blobs_blob_delete(az_storage_blobs_blob_client * client, az_http_resp
   // TODO: define max URL size
   _az_http_request hrb;
   AZ_RETURN_IF_FAILED(az_http_request_init(
-      &hrb, az_http_method_get(), request_url_span, request_headers_span, az_span_null()));
+      &hrb,
+      &az_context_app,
+      az_http_method_get(),
+      request_url_span,
+      request_headers_span,
+      az_span_null()));
 
   // start pipeline
   return az_http_pipeline_process(&client->_internal.pipeline, &hrb, response);
@@ -120,7 +131,11 @@ int main() {
   }
 
   az_result const create_result = az_storage_blobs_blob_upload(
-      &client, AZ_SPAN_FROM_STR("Some Test Content for the new blob"), NULL, &http_response);
+      &client,
+      &az_context_app,
+      AZ_SPAN_FROM_STR("Some Test Content for the new blob"),
+      NULL,
+      &http_response);
 
   if (az_failed(create_result)) {
     printf("Failed to create blob");

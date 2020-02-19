@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
+#include <az_config_internal.h>
 #include <az_contract_internal.h>
 #include <az_credentials_internal.h>
 #include <az_http.h>
@@ -8,7 +9,6 @@
 #include <az_http_transport.h>
 #include <az_json.h>
 #include <az_storage_blobs.h>
-#include <az_config_internal.h>
 
 #include <stddef.h>
 
@@ -31,7 +31,8 @@ AZ_NODISCARD az_storage_blobs_blob_client_options az_storage_blobs_blob_client_o
     .retry = az_http_policy_retry_options_default(),
   };
 
-  options._internal.api_version._internal.option_location = _az_http_policy_apiversion_option_location_queryparameter;
+  options._internal.api_version._internal.option_location
+      = _az_http_policy_apiversion_option_location_queryparameter;
   options._internal.api_version._internal.name = AZ_SPAN_FROM_STR("x-ms-version");
   options._internal.api_version._internal.version = AZ_STORAGE_API_VERSION;
 
@@ -128,6 +129,7 @@ AZ_NODISCARD az_result az_storage_blobs_blob_client_init(
 
 AZ_NODISCARD az_result az_storage_blobs_blob_upload(
     az_storage_blobs_blob_client * client,
+    az_context * context,
     az_span content, /* Buffer of content*/
     az_storage_blobs_blob_upload_options * options,
     az_http_response * response) {
@@ -152,7 +154,7 @@ AZ_NODISCARD az_result az_storage_blobs_blob_upload(
   // create request
   _az_http_request hrb;
   AZ_RETURN_IF_FAILED(az_http_request_init(
-      &hrb, az_http_method_get(), request_url_span, request_headers_span, content));
+      &hrb, context, az_http_method_get(), request_url_span, request_headers_span, content));
 
   // add blob type to request
   AZ_RETURN_IF_FAILED(az_http_request_append_header(

@@ -109,6 +109,7 @@ AZ_NODISCARD az_result az_http_pipeline_policy_transport(
  */
 AZ_NODISCARD az_result az_http_request_init(
     _az_http_request * p_request,
+    az_context * context,
     az_http_method method,
     az_span url,
     az_span headers_buffer,

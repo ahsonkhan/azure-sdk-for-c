@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // SPDX-License-Identifier: MIT
 
+#include <az_context.h>
 #include <az_http.h>
 #include <az_http_internal.h>
 #include <az_http_transport.h>
@@ -30,7 +31,7 @@ int main() {
   post_request_for_OK_expected();
   get_request_overflow_response();
   get_request_unresolved_host();
-  
+
   return exit_code;
 }
 
@@ -51,7 +52,12 @@ void get_request_for_OK_expected() {
 
   _az_http_request sample_request;
   az_result init_request_result = az_http_request_init(
-      &sample_request, az_http_method_get(), sample_url, az_span_null(), az_span_null());
+      &sample_request,
+      &az_context_app,
+      az_http_method_get(),
+      sample_url,
+      az_span_null(),
+      az_span_null());
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
@@ -86,7 +92,12 @@ void post_request_for_OK_expected() {
 
   _az_http_request sample_request;
   az_result init_request_result = az_http_request_init(
-      &sample_request, az_http_method_post(), sample_url, az_span_null(), az_span_null());
+      &sample_request,
+      &az_context_app,
+      az_http_method_post(),
+      sample_url,
+      az_span_null(),
+      az_span_null());
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
@@ -121,7 +132,12 @@ void get_request_overflow_response() {
 
   _az_http_request sample_request;
   az_result init_request_result = az_http_request_init(
-      &sample_request, az_http_method_get(), sample_url, az_span_null(), az_span_null());
+      &sample_request,
+      &az_context_app,
+      az_http_method_get(),
+      sample_url,
+      az_span_null(),
+      az_span_null());
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
@@ -151,7 +167,12 @@ void get_request_unresolved_host() {
 
   _az_http_request sample_request;
   az_result init_request_result = az_http_request_init(
-      &sample_request, az_http_method_get(), sample_url, az_span_null(), az_span_null());
+      &sample_request,
+      &az_context_app,
+      az_http_method_get(),
+      sample_url,
+      az_span_null(),
+      az_span_null());
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
