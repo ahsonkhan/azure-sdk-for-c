@@ -26,6 +26,7 @@ void test_json_string();
 void test_span_builder_replace();
 void test_mut_span();
 void test_log();
+void test_az_context();
 
 int exit_code = 0;
 
@@ -192,6 +193,7 @@ static az_span hrb_header_authorization_token2
     = AZ_SPAN_LITERAL_FROM_STR("Bearer 99887766554433221100");
 
 int main() {
+  test_az_context();
   test_json_get_by_pointer();
   test_json_pointer();
   test_json_builder();

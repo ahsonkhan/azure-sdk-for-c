@@ -11,6 +11,7 @@ add_library (
   az_core
   src/az_aad.c
   src/az_credentials.c
+  src/az_context.c
   src/az_http_pipeline.c
   src/az_http_policy.c
   src/az_http_request.c
@@ -59,6 +60,7 @@ add_library (az::core ALIAS az_core)
  add_executable (
      az_core_test 
      test/main.c 
+     test/test_az_context.c
      test/test_http_response_read_and_parse.c
      test/test_json_builder.c
      test/test_json_get_by_pointer.c
