@@ -7,7 +7,7 @@
 #include <az_json.h>
 #include <az_keyvault.h>
 
-#include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include <_az_cfg.h>
@@ -38,9 +38,17 @@ int main() {
     printf("Failed to init credential");
   }
 
+  az_http_transport_options http_transport_options = { 0 };
+  az_result const http_transport_options_init_status
+      = az_http_transport_options_init(&http_transport_options);
+
+  if (az_failed(http_transport_options_init_status)) {
+    printf("Failed to init http transport options");
+  }
+
   // Init client.
   az_keyvault_keys_client_options options
-      = az_keyvault_keys_client_options_default(az_http_client_curl);
+      = az_keyvault_keys_client_options_default(&http_transport_options);
 
   // URL will be copied to client's internal buffer. So we don't need to keep the content of URL
   // buffer immutable  on client's side
@@ -88,7 +96,7 @@ int main() {
   printf("Key created result: \n%s", response_buffer);
 
   // Reuse response buffer for create Key by creating a new span from response_buffer
-  az_result const reset1_op = az_http_response_reset(&http_response);
+  az_result const reset1_op = az_http_response_init(&http_response, response_span);
   if (az_failed(reset1_op)) {
     printf("Failed to reset http response (1)");
   }
@@ -119,7 +127,7 @@ int main() {
   AZ_RETURN_IF_FAILED(az_span_slice(version_builder, 0, az_span_length(version_builder), &version));
 
   // Reuse response buffer for delete Key by creating a new span from response_buffer
-  az_result const reset2_op = az_http_response_reset(&http_response);
+  az_result const reset2_op = az_http_response_init(&http_response, response_span);
   if (az_failed(reset2_op)) {
     printf("Failed to reset http response (2)");
   }
@@ -143,7 +151,7 @@ int main() {
       response_buffer);
 
   // Reuse response buffer for delete Key by creating a new span from response_buffer
-  az_result const reset3_op = az_http_response_reset(&http_response);
+  az_result const reset3_op = az_http_response_init(&http_response, response_span);
   if (az_failed(reset3_op)) {
     printf("Failed to reset http response (3)");
   }
@@ -171,7 +179,7 @@ int main() {
   printf("\n\n*********************************\nDELETED Key: \n %s", response_buffer);
 
   // Reuse response buffer for create Key by creating a new span from response_buffer
-  az_result const reset4_op = az_http_response_reset(&http_response);
+  az_result const reset4_op = az_http_response_init(&http_response, response_span);
   if (az_failed(reset4_op)) {
     printf("Failed to reset http response (4)");
   }
