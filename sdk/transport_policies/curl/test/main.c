@@ -61,10 +61,8 @@ void get_request_for_OK_expected() {
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
-  az_http_transport_options transporter;
-  az_result transport_init_result = az_http_transport_options_init(&transporter);
-
-  TEST_ASSERT(transport_init_result == AZ_OK);
+  az_http_transport_options transporter
+      = az_http_transport_options_default(_az_http_client_curl_send_request);
 
   // send request
   az_result send_req_result = transporter._internal.send_request(&sample_request, &sample_response);
@@ -101,10 +99,8 @@ void post_request_for_OK_expected() {
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
-  az_http_transport_options transporter;
-  az_result transport_init_result = az_http_transport_options_init(&transporter);
-
-  TEST_ASSERT(transport_init_result == AZ_OK);
+  az_http_transport_options transporter
+      = az_http_transport_options_default(_az_http_client_curl_send_request);
 
   // send request
   az_result send_req_result = transporter._internal.send_request(&sample_request, &sample_response);
@@ -141,10 +137,8 @@ void get_request_overflow_response() {
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
-  az_http_transport_options transporter;
-  az_result transport_init_result = az_http_transport_options_init(&transporter);
-
-  TEST_ASSERT(transport_init_result == AZ_OK);
+  az_http_transport_options transporter
+      = az_http_transport_options_default(_az_http_client_curl_send_request);
 
   // send request
   az_result send_req_result = transporter._internal.send_request(&sample_request, &sample_response);
@@ -176,10 +170,8 @@ void get_request_unresolved_host() {
 
   TEST_ASSERT(init_request_result == AZ_OK);
 
-  az_http_transport_options transporter;
-  az_result transport_init_result = az_http_transport_options_init(&transporter);
-
-  TEST_ASSERT(transport_init_result == AZ_OK);
+  az_http_transport_options transporter
+      = az_http_transport_options_default(_az_http_client_curl_send_request);
 
   // send request
   az_result send_req_result = transporter._internal.send_request(&sample_request, &sample_response);
