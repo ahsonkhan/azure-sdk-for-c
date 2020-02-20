@@ -12,6 +12,7 @@
 
 #include <az_result.h>
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include <_az_cfg_prefix.h>
@@ -52,6 +53,9 @@ az_context_with_value(az_context const * parent, void * key, void * value) {
 
 // Cancels an az_context node in the tree; this effectively cancels all the child nodes as well.
 AZ_INLINE void az_context_cancel(az_context * context) {
+  if (context == NULL) {
+    return;
+  }
   context->_internal.expiration = 0; // The beginning of time
 }
 
