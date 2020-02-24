@@ -12,5 +12,6 @@ jobs:
             Copy-Item
             -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
             -Destination $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/version.txt
+            -Force
           displayName: Copy package version information
 
