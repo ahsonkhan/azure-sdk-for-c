@@ -26,4 +26,5 @@ stages:
     parameters:
       ServiceDirectory: core
       Artifacts:
-        - name: core
+        - Name: core
+          LibraryName: az_core
