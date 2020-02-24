@@ -24,6 +24,9 @@ jobs:
             --DoxygenPath="c:\\program files\\doxygen\\bin\\doxygen.exe"
           displayName: Fill in Doxyfile.template
 
+        - pwsh: New-Item -ItemType directory -Path $(Build.ArtifactStagingDirectory) -Name docs/${{ artifact.Name }}
+          displayName: Create doc artifact location
+
         - task: PublishPipelineArtifact@1
           inputs:
             targetPath: sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/html
