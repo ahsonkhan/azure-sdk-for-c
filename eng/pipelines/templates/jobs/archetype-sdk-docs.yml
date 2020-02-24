@@ -3,9 +3,9 @@ parameters:
   ServiceDirectory: not-specified
 
 jobs:
-  - job: Generate Docs
+  - job: GenerateDocs
     pool:
-      vmImage: windows-latest
+      vmImage: windows-2019
     steps:
       - pwsh: >-
           choco install doxygen.install
