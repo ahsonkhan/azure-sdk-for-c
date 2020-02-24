@@ -1,0 +1,16 @@
+parameters:
+  Artifacts: []
+  ServiceDirectory: not-specified
+
+jobs:
+  - job: GenerateReleaseInfo
+    pool:
+        vmImage: windows-2019
+    steps:
+      - ${{ each artifact in parameters.Artifacts }}:
+        - pwsh: >-
+            Copy-Item
+            -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
+            -Destination $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/version.txt
+          displayName: Copy package version information
+
