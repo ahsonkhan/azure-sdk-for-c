@@ -23,8 +23,8 @@ stages:
     - template: pipelines/stages/archetype-c-release.yml@azure-sdk-build-tools
       parameters:
         ServiceDirectory: ${{parameters.ServiceDirectory}}
-        DependsOn:
-          - Build
-          - Docs
+        dependsOn:
+        - Build
+        - Docs
         Artifacts: ${{parameters.Artifacts}}
         ArtifactName: packages
