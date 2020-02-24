@@ -27,4 +27,4 @@ jobs:
         - task: PublishPipelineArtifact@1
           inputs:
             targetPath: sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Name }}/html
-            artifactName: docs/${{ parameters.ServiceDirectory }}/${{ artifact.Name }}
+            artifactName: docs.${{ parameters.ServiceDirectory }}.${{ artifact.Name }}
