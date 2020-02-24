@@ -107,9 +107,7 @@ jobs:
     workingDirectory: build
     displayName: ctest
 
-
-- job: BuildDocs
-  - template: ../jobs/archetype-sdk-docs.yml
-    parameters:
-      Artifacts: ${{ parameters.Artifacts }}
-      ServiceDirectory: ${{ parameters.ServiceDirectory }}
+- template: ../jobs/archetype-sdk-docs.yml
+  parameters:
+    Artifacts: ${{ parameters.Artifacts }}
+    ServiceDirectory: ${{ parameters.ServiceDirectory }}
