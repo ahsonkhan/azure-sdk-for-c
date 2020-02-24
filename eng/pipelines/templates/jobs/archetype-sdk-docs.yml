@@ -15,7 +15,7 @@ jobs:
         - pwsh: Write-Host "##vso[task.setvariable variable=PackageVersion]$(Get-Content .\sdk\${{ parameters.ServiceDirectory }}\${{ artifact.Name }}\version.txt)"
           displayName: Get artifact version
         - pwsh: >-
-            python eng/docs/generate_docs.py
+            python eng/docs/api/generate_docs.py
             --TemplateFile="eng/docs/api/Doxyfile.template"
             --PackagePath="sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Name }}"
             --PackageName="${{ artifact.Name }}"
