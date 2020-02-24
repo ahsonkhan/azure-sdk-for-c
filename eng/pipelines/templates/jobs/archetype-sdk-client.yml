@@ -57,6 +57,7 @@ jobs:
         vcpkg.deps: 'cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-linux'
         UNIT_TESTING: ON
+        build.args: ' -DUNIT_TESTING=ON'
       Win_x86_with_unit_testing:
         vm.image: 'windows-2019'
         vcpkg.deps: 'cmocka'
@@ -64,6 +65,7 @@ jobs:
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: Win32
         UNIT_TESTING: ON
+        build.args: ' -DUNIT_TESTING=ON'
       Win_x64_with_unit_testing:
         vm.image: 'windows-2019'
         vcpkg.deps: 'cmocka'
@@ -71,11 +73,13 @@ jobs:
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: x64
         UNIT_TESTING: ON
+        build.args: ' -DUNIT_TESTING=ON'
       MacOS_x64_with_unit_testing:
         vm.image: 'macOS-10.14'
         vcpkg.deps: 'cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-osx'
         UNIT_TESTING: ON
+        build.args: ' -DUNIT_TESTING=ON'
       
       # Unit Testing + samples
       Linux_x64_with_unit_testing_and_samples:
@@ -83,7 +87,7 @@ jobs:
         vcpkg.deps: 'curl[ssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-linux'
         UNIT_TESTING: ON
-        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=POSIX'
+        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=POSIX  -DUNIT_TESTING=ON'
       Win_x86_with_unit_testing_and_samples:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl] cmocka'
@@ -91,7 +95,7 @@ jobs:
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: Win32
         UNIT_TESTING: ON
-        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=WIN32'
+        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=WIN32  -DUNIT_TESTING=ON'
       Win_x64_with_unit_testing_and_samples:
         vm.image: 'windows-2019'
         vcpkg.deps: 'curl[winssl] cmocka'
@@ -99,13 +103,13 @@ jobs:
         CMAKE_GENERATOR: 'Visual Studio 16 2019'
         CMAKE_GENERATOR_PLATFORM: x64
         UNIT_TESTING: ON
-        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=WIN32'
+        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=WIN32  -DUNIT_TESTING=ON'
       MacOS_x64_with_unit_testing_and_samples:
         vm.image: 'macOS-10.14'
         vcpkg.deps: 'curl[ssl] cmocka'
         VCPKG_DEFAULT_TRIPLET: 'x64-osx'
         UNIT_TESTING: ON
-        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=POSIX'
+        build.args: ' -DBUILD_CURL_TRANSPORT=ON -DAZ_PLATFORM_IMPL=POSIX  -DUNIT_TESTING=ON'
 
   pool:
     vmImage: $(vm.image)
