@@ -5,14 +5,14 @@ parameters:
 
 stages:
   - stage: Build
-    job:
+    jobs:
       - template: ../jobs/archetype-sdk-client.yml
         parameters:
           ServiceDirectory: ${{ parameters.ServiceDirectory }}
           Artifacts: ${{ parameters.Artifacts }}
 
   - stage: Docs
-    job:
+    jobs:
       - template: ../jobs/archetype-sdk-docs.yml
         parameters:
           Artifacts: ${{ parameters.Artifacts }}
