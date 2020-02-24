@@ -11,7 +11,7 @@ jobs:
         - pwsh: >-
             Copy-Item
             -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
-            -Destination $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/version.txt
+            -Destination $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/
             -Force
           displayName: Copy package version information
 
