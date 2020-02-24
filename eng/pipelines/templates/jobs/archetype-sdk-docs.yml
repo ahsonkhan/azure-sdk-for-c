@@ -12,7 +12,7 @@ jobs:
         displayName: Install Doxygen
 
       - ${{ each artifact in parameters.Artifacts }}:
-        - pwsh: Write-Host "##vso[task.setvariable variable=PackageVersion]$(Get-Content .\sdk\${{ parameters.ServiceDirectory }}\${{ artifact.Name }}\version.txt"
+        - pwsh: Write-Host "##vso[task.setvariable variable=PackageVersion]$(Get-Content .\sdk\${{ parameters.ServiceDirectory }}\${{ artifact.Name }}\version.txt)"
           displayName: Get artifact version
         - pwsh: >-
             python eng/docs/generate_docs.py
