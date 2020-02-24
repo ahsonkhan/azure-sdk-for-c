@@ -12,12 +12,12 @@ jobs:
         displayName: Install Doxygen
 
       - ${{ each artifact in parameters.Artifacts }}:
-        - pwsh: Write-Host "##vso[task.setvariable variable=PackageVersion]$(Get-Content .\sdk\${{ parameters.ServiceDirectory }}\${{ artifact.Name }}\version.txt)"
-          displayName: Get artifact version
+        - pwsh: Write-Host "##vso[task.setvariable variable=PackageVersion]$(Get-Content .\sdk\${{ parameters.ServiceDirectory }}\${{ artifact.Path }}\version.txt)"
+          displayName: Set $(PackageVersion) from version.txt file
         - pwsh: >-
             python eng/docs/api/generate_docs.py
             --TemplateFile="eng/docs/api/Doxyfile.template"
-            --PackagePath="sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Name }}"
+            --PackagePath="sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}"
             --PackageName="${{ artifact.Name }}"
             --PackageVersion="$(PackageVersion)"
             --AssetsPath="eng/docs/api/assets"
@@ -26,6 +26,6 @@ jobs:
 
         - task: PublishPipelineArtifact@1
           inputs:
-            targetPath: sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Name }}/html
+            targetPath: sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/html
             artifactName: docs
-            path: $(Build.ArtifactStagingDirectory)/docs/${{ artifact.LibraryName }}
+            path: $(Build.ArtifactStagingDirectory)/docs/${{ artifact.Name }}

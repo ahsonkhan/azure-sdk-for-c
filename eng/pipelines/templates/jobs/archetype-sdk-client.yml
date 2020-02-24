@@ -107,6 +107,11 @@ jobs:
     workingDirectory: build
     displayName: ctest
 
+- template: ./release-info.yml
+  parameters:
+    Artifacts: ${{ parameters.Artifacts }}
+    ServiceDirectory: ${{ parameters.ServiceDirectory }}
+
 - template: ../jobs/archetype-sdk-docs.yml
   parameters:
     Artifacts: ${{ parameters.Artifacts }}
