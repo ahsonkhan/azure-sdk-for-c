@@ -11,13 +11,6 @@ stages:
           ServiceDirectory: ${{ parameters.ServiceDirectory }}
           Artifacts: ${{ parameters.Artifacts }}
 
-  - stage: Docs
-    jobs:
-      - template: ../jobs/archetype-sdk-docs.yml
-        parameters:
-          Artifacts: ${{ parameters.Artifacts }}
-          ServiceDirectory: ${{ parameters.ServiceDirectory }}
-
   - ${{if and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['System.TeamProject'], 'internal'))}}:
 
     - template: pipelines/stages/archetype-c-release.yml@azure-sdk-build-tools
