@@ -11,7 +11,7 @@ resources:
       type: git
       name: internal/azure-sdk-build-tools
       # ref: 7056936fa8315e18852759e4a1a9041dbfeeea3a
-      ref: djurek/c-docs-publish
+      ref: djurek/c-release
 
 trigger:
   branches:
