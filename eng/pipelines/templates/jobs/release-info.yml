@@ -8,7 +8,7 @@ jobs:
         vmImage: windows-2019
     steps:
       - ${{ each artifact in parameters.Artifacts }}:
-        - pwsh: New-Item -ItemType directory -Path $(Build.ArtifactStagingDirectory) -Name docs/${{ artifact.Name }}
+        - pwsh: New-Item -ItemType directory -Path $(Build.ArtifactStagingDirectory) -Name packages/${{ artifact.Name }}
           displayName: Create package info artifact location
         - pwsh: >-
             Copy-Item
