@@ -18,7 +18,7 @@ jobs:
         - pwsh: |
             $outputPath = Join-Path -Path $(Build.ArtifactStagingDirectory) packages/${{ artifact.Name }}/package-info.json
             $version = Get-Content -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
-            $outputObject = @{ version = $version; name = '${{ artifact.Name }}' } | ConvertTo-Json
+            $outputObject = @{ version = $version.ToString(); name = '${{ artifact.Name }}' } | ConvertTo-Json
 
             Set-Content -Path $outputPath -Value $outputObject
           displayName: Create package info JSON file
