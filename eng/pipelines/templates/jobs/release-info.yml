@@ -16,7 +16,7 @@ jobs:
           displayName: Create package info artifact location
 
         - pwsh: |
-            $outputPath = $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/package-info.json
+            $outputPath = Join-Path -Path $(Build.ArtifactStagingDirectory) packages/${{ artifact.Name }}/package-info.json
             $version = Get-Content -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
             $outputObject = @{ version = $version; name = '${{ artifact.Name }}' }
 
