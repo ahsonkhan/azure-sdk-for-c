@@ -8,12 +8,22 @@ jobs:
         vmImage: windows-2019
     steps:
       - ${{ each artifact in parameters.Artifacts }}:
-        - pwsh: New-Item -ItemType directory -Path $(Build.ArtifactStagingDirectory) -Name packages/${{ artifact.Name }}
-          displayName: Create package info artifact location
         - pwsh: >-
-            Copy-Item
-            -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
-            -Destination $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/
-            -Force
-          displayName: Copy package version information
+            New-Item
+            -ItemType directory
+            -Path $(Build.ArtifactStagingDirectory)
+            -Name packages/${{ artifact.Name }}
+          displayName: Create package info artifact location
 
+        - pwsh: |
+            $outputPath = $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}/package-info.json
+            $version = Get-Content -Path sdk/${{ parameters.ServiceDirectory }}/${{ artifact.Path }}/version.txt
+            $outputObject = @{ version = $version; name = '${{ artifact.Name }}' }
+
+            Set-Content -Path $outputPath -Value $outputObject
+          displayName: Create package info JSON file
+
+        - task: PublishPipelineArtifact@1
+          inputs:
+            artifactName: packages
+            path: $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}
