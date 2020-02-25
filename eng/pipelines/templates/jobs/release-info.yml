@@ -26,4 +26,4 @@ jobs:
         - task: PublishPipelineArtifact@1
           inputs:
             artifactName: packages
-            path: $(Build.ArtifactStagingDirectory)/packages/${{ artifact.Name }}
+            path: $(Build.ArtifactStagingDirectory)/packages
