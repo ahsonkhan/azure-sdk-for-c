@@ -1,7 +1,7 @@
 project(core-utest C)
 
 message(STATUS "Looking for CMocka which is required for unit testing")
-find_package(CMocka REQUIRED)
+find_package(cmocka CONFIG REQUIRED)
 
 enable_testing()
 include(CTest)
@@ -101,6 +101,6 @@ add_cmocka_test_environment(test_json)
 add_cmocka_test(test_az_span
                 SOURCES mocka_az_span.c
                 COMPILE_OPTIONS ${DEFAULT_C_COMPILE_FLAGS}
-                LINK_LIBRARIES ${CMOCKA_LIBRARIES} az_core ${MATH_LIB_UNIX})
+                LINK_LIBRARIES  ${CMOCKA_LIBRARIES} az_core ${MATH_LIB_UNIX})
 add_cmocka_test_environment(test_az_span)
 
