@@ -94,7 +94,7 @@ void test_az_log(void** state)
       &az_context_app,
       az_http_method_get(),
       url,
-      az_span_size(url),
+      url.size,
       AZ_SPAN_FROM_BUFFER(headers),
       AZ_SPAN_FROM_STR("AAAAABBBBBCCCCCDDDDDEEEEEFFFFFGGGGGHHHHHIIIIIJJJJJKKKKK")));
 
@@ -125,8 +125,8 @@ void test_az_log(void** state)
                          "\r\n"
                          "KKKKKJJJJJIIIIIHHHHHGGGGGFFFFFEEEEEDDDDDCCCCCBBBBBAAAAA");
   az_span_copy(response_builder, response_span);
-  response_builder = az_span_slice(response_builder, 0, az_span_size(response_span));
-  assert_int_equal(az_span_size(response_builder), az_span_size(response_span));
+  response_builder = az_span_slice(response_builder, 0, response_span.size);
+  assert_int_equal(response_builder.size, response_span.size);
 
   az_http_response response = { 0 };
   TEST_EXPECT_SUCCESS(az_http_response_init(&response, response_builder));

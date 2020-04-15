@@ -17,8 +17,8 @@ static const az_span methods_response_topic_properties = AZ_SPAN_LITERAL_FROM_ST
 
 static AZ_NODISCARD int32_t _az_span_diff(az_span new_span, az_span old_span)
 {
-  int32_t answer = az_span_size(old_span) - az_span_size(new_span);
-  AZ_PRECONDITION(answer == (int32_t)(az_span_ptr(new_span) - az_span_ptr(old_span)));
+  int32_t answer = old_span.size - new_span.size;
+  AZ_PRECONDITION(answer == (int32_t)(new_span.ptr - old_span.ptr));
   return answer;
 }
 
@@ -34,7 +34,7 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_subscribe_topic_filter_get(
   UNUSED(client);
 
   int32_t required_length
-      = az_span_size(methods_topic_prefix) + az_span_size(methods_topic_filter_suffix) + 1;
+      = methods_topic_prefix.size + methods_topic_filter_suffix.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic_filter, required_length);
 
@@ -67,7 +67,7 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_received_topic_parse(
   }
 
   received_topic = az_span_slice(
-      received_topic, index + az_span_size(methods_topic_prefix), az_span_size(received_topic));
+      received_topic, index + methods_topic_prefix.size, received_topic.size);
 
   index = az_span_find(received_topic, methods_topic_filter_suffix);
 
@@ -78,8 +78,8 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_received_topic_parse(
 
   received_topic = az_span_slice(
       received_topic,
-      index + az_span_size(methods_topic_filter_suffix),
-      az_span_size(received_topic));
+      index + methods_topic_filter_suffix.size,
+      received_topic.size);
 
   index = az_span_find(received_topic, methods_response_topic_properties);
 
@@ -91,8 +91,8 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_received_topic_parse(
   out_request->name = az_span_slice(received_topic, 0, index);
   out_request->request_id = az_span_slice(
       received_topic,
-      index + az_span_size(methods_response_topic_properties),
-      az_span_size(received_topic));
+      index + methods_response_topic_properties.size,
+      received_topic.size);
 
   return AZ_OK;
 }
@@ -112,7 +112,7 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_response_publish_topic_get(
   UNUSED(client);
 
   int32_t required_length
-      = az_span_size(methods_topic_prefix) + az_span_size(methods_response_topic_result);
+      = methods_topic_prefix.size + methods_response_topic_result.size;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic, required_length);
 
@@ -121,7 +121,7 @@ AZ_NODISCARD az_result az_iot_hub_client_methods_response_publish_topic_get(
 
   AZ_RETURN_IF_FAILED(az_span_copy_u32toa(remainder, (uint32_t)status, &remainder));
 
-  required_length = az_span_size(methods_response_topic_properties) + az_span_size(request_id);
+  required_length = methods_response_topic_properties.size + request_id.size;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, required_length);
 

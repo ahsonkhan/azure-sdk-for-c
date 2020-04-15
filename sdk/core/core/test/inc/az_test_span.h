@@ -58,14 +58,14 @@ AZ_INLINE void az_span_for_test_verify(
     az_span original_buffer,
     int32_t size_expected)
 {
-  assert_int_equal(az_span_size(original_buffer), size_expected);
-  assert_memory_equal(az_span_ptr(result_span), (size_t)buffer_expected, (size_t)length_expected);
+  assert_int_equal(original_buffer.size, size_expected);
+  assert_memory_equal(result_span.ptr, (size_t)buffer_expected, (size_t)length_expected);
   assert_memory_equal(
-      az_span_ptr(original_buffer), (size_t)buffer_expected, (size_t)length_expected);
+      original_buffer.ptr, (size_t)buffer_expected, (size_t)length_expected);
 
   for (int32_t i = length_expected; i < size_expected; i++)
   {
-    assert_true(*(uint8_t*)(az_span_ptr(original_buffer) + i) == 0xcc);
+    assert_true(*(uint8_t*)(original_buffer.ptr + i) == 0xcc);
   }
 }
 

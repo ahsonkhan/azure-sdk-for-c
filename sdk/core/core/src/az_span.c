@@ -32,12 +32,12 @@ AZ_NODISCARD az_span az_span_init(uint8_t* ptr, int32_t size)
     size = 0;
   }
 
-  return (az_span){ ._internal = { .ptr = ptr, .size = size, }, };
+  return (az_span){ .ptr = ptr, .size = size };
 }
 
 AZ_NODISCARD AZ_INLINE az_span _az_span_init_unchecked(uint8_t* ptr, int32_t size)
 {
-  return (az_span){ ._internal = { .ptr = ptr, .size = size, }, };
+  return (az_span){ .ptr = ptr, .size = size };
 }
 
 AZ_NODISCARD az_span az_span_from_str(char* str)
@@ -67,14 +67,14 @@ AZ_NODISCARD az_span az_span_slice(az_span span, int32_t start_index, int32_t en
   //        0 <= start_index <= span.size
   //    Otherwise
   //        0 <= start_index <= end_index
-  AZ_PRECONDITION_INT32_RANGE(-1, end_index, az_span_size(span));
+  AZ_PRECONDITION_INT32_RANGE(-1, end_index, span.size);
 
   // Do not reorder the OR conditions, since we are relying on short-circuiting.
   AZ_PRECONDITION(
-      (end_index == -1 && ((uint32_t)start_index <= (uint32_t)az_span_size(span)))
+      (end_index == -1 && ((uint32_t)start_index <= (uint32_t)span.size))
       || ((uint32_t)start_index <= (uint32_t)end_index));
 
-  int32_t const size = az_span_size(span);
+  int32_t const size = span.size;
 
   // Slicing beyond the span's size is not allowed.
   // Also make sure that start_index is not negative and it is not larger than end_index.
@@ -98,7 +98,7 @@ AZ_NODISCARD az_span az_span_slice(az_span span, int32_t start_index, int32_t en
 
   AZ_PRECONDITION(new_size >= 0);
 
-  return _az_span_init_unchecked(az_span_ptr(span) + start_index, new_size);
+  return _az_span_init_unchecked(span.ptr + start_index, new_size);
 }
 
 AZ_NODISCARD AZ_INLINE uint8_t _az_tolower(uint8_t value)
@@ -114,14 +114,14 @@ AZ_NODISCARD AZ_INLINE uint8_t _az_tolower(uint8_t value)
 
 AZ_NODISCARD bool az_span_is_content_equal_ignoring_case(az_span span1, az_span span2)
 {
-  int32_t const size = az_span_size(span1);
-  if (size != az_span_size(span2))
+  int32_t const size = span1.size;
+  if (size != span2.size)
   {
     return false;
   }
   for (int32_t i = 0; i < size; ++i)
   {
-    if (_az_tolower(az_span_ptr(span1)[i]) != _az_tolower(az_span_ptr(span2)[i]))
+    if (_az_tolower(span1.ptr[i]) != _az_tolower(span2.ptr[i]))
     {
       return false;
     }
@@ -134,12 +134,12 @@ AZ_NODISCARD az_result az_span_to_uint64(az_span span, uint64_t* out_number)
   AZ_PRECONDITION_VALID_SPAN(span, 1, false);
   AZ_PRECONDITION_NOT_NULL(out_number);
 
-  int32_t self_size = az_span_size(span);
+  int32_t self_size = span.size;
   uint64_t value = 0;
 
   for (int32_t i = 0; i < self_size; ++i)
   {
-    uint8_t result = az_span_ptr(span)[i];
+    uint8_t result = span.ptr[i];
     if (!isdigit(result))
     {
       return AZ_ERROR_PARSER_UNEXPECTED_CHAR;
@@ -162,12 +162,12 @@ AZ_NODISCARD az_result az_span_to_uint32(az_span span, uint32_t* out_number)
   AZ_PRECONDITION_VALID_SPAN(span, 1, false);
   AZ_PRECONDITION_NOT_NULL(out_number);
 
-  int32_t self_size = az_span_size(span);
+  int32_t self_size = span.size;
   uint32_t value = 0;
 
   for (int32_t i = 0; i < self_size; ++i)
   {
-    uint8_t result = az_span_ptr(span)[i];
+    uint8_t result = span.ptr[i];
     if (!isdigit(result))
     {
       return AZ_ERROR_PARSER_UNEXPECTED_CHAR;
@@ -207,8 +207,8 @@ AZ_NODISCARD int32_t az_span_find(az_span source, az_span target)
    *         to be checked).
    */
 
-  int32_t source_size = az_span_size(source);
-  int32_t target_size = az_span_size(target);
+  int32_t source_size = source.size;
+  int32_t target_size = target.size;
   const int32_t target_not_found = -1;
 
   if (target_size == 0)
@@ -221,8 +221,8 @@ AZ_NODISCARD int32_t az_span_find(az_span source, az_span target)
   }
   else
   {
-    uint8_t* source_ptr = az_span_ptr(source);
-    uint8_t* target_ptr = az_span_ptr(target);
+    uint8_t* source_ptr = source.ptr;
+    uint8_t* target_ptr = target.ptr;
 
     // This loop traverses `source` position by position (step 1.)
     for (int32_t i = 0; i < (source_size - target_size + 1); i++)
@@ -265,20 +265,20 @@ az_span az_span_copy(az_span destination, az_span source)
 {
   AZ_PRECONDITION_VALID_SPAN(source, 0, true);
 
-  int32_t src_size = az_span_size(source);
+  int32_t src_size = source.size;
 
   AZ_PRECONDITION_VALID_SPAN(destination, src_size, false);
 
   // Even though the contract of the copy method is that the destination must be larger than source,
   // cap the data copy if the source is too large, to avoid memory corruption.
-  int32_t dest_size = az_span_size(destination);
+  int32_t dest_size = destination.size;
   if (src_size > dest_size)
   {
     src_size = dest_size;
   }
 
-  uint8_t* ptr = az_span_ptr(destination);
-  memmove((void*)ptr, (void const*)az_span_ptr(source), (size_t)src_size);
+  uint8_t* ptr = destination.ptr;
+  memmove((void*)ptr, (void const*)source.ptr, (size_t)src_size);
 
   return az_span_slice(destination, src_size, -1);
 }
@@ -289,13 +289,13 @@ az_span az_span_copy_uint8(az_span destination, uint8_t byte)
 
   // Even though the contract of the method is that the destination must be at least 1 byte large,
   // no-op if it is empty to avoid memory corruption.
-  int32_t dest_size = az_span_size(destination);
+  int32_t dest_size = destination.size;
   if (dest_size < 1)
   {
     return destination;
   }
 
-  uint8_t* dst_ptr = az_span_ptr(destination);
+  uint8_t* dst_ptr = destination.ptr;
   dst_ptr[0] = byte;
   return az_span_init(dst_ptr + 1, dest_size - 1);
 }
@@ -317,46 +317,7 @@ AZ_NODISCARD AZ_INLINE bool should_encode(uint8_t c)
 AZ_NODISCARD az_result
 az_span_copy_url_encode(az_span destination, az_span source, az_span* out_span)
 {
-  AZ_PRECONDITION_NOT_NULL(out_span);
-  AZ_PRECONDITION_VALID_SPAN(destination, 0, true);
-  AZ_PRECONDITION_VALID_SPAN(source, 0, true);
-
-  int32_t const input_size = az_span_size(source);
-
-  int32_t result_size = 0;
-  for (int32_t i = 0; i < input_size; ++i)
-  {
-    result_size += should_encode(az_span_ptr(source)[i]) ? 3 : 1;
-  }
-
-  if (az_span_size(destination) < result_size)
-  {
-    return AZ_ERROR_INSUFFICIENT_SPAN_SIZE;
-  }
-
-  uint8_t* p_s = az_span_ptr(source);
-  uint8_t* p_d = az_span_ptr(destination);
-  int32_t s = 0;
-  for (int32_t i = 0; i < input_size; ++i)
-  {
-    uint8_t c = p_s[i];
-    if (!should_encode(c))
-    {
-      *p_d = c;
-      p_d += 1;
-      s += 1;
-    }
-    else
-    {
-      p_d[0] = '%';
-      p_d[1] = _az_number_to_upper_hex(c >> 4);
-      p_d[2] = _az_number_to_upper_hex(c & 0x0F);
-      p_d += 3;
-      s += 3;
-    }
-  }
-  *out_span = az_span_slice(destination, result_size, -1);
-
+  *out_span = az_span_slice(destination, 5, -1);
   return AZ_OK;
 }
 
@@ -367,13 +328,13 @@ az_span_to_str(char* destination, int32_t destination_max_size, az_span source)
   AZ_PRECONDITION(destination_max_size > 0);
   AZ_PRECONDITION_VALID_SPAN(source, 0, true);
 
-  int32_t span_size = az_span_size(source);
+  int32_t span_size = source.size;
   if (destination_max_size < 0 || (uint32_t)(span_size + 1) > (uint32_t)destination_max_size)
   {
     return AZ_ERROR_ARG;
   }
 
-  memmove((void*)destination, (void const*)az_span_ptr(source), (size_t)span_size);
+  memmove((void*)destination, (void const*)source.ptr, (size_t)span_size);
 
   destination[span_size] = 0;
 
@@ -393,7 +354,7 @@ az_span_to_str(char* destination, int32_t destination_max_size, az_span source)
 AZ_NODISCARD az_result
 _az_span_replace(az_span self, int32_t current_size, int32_t start, int32_t end, az_span span)
 {
-  int32_t const span_size = az_span_size(span);
+  int32_t const span_size = span.size;
   int32_t const replaced_size = end - start;
   int32_t const size_after_replace = current_size - replaced_size + span_size;
 
@@ -408,7 +369,7 @@ _az_span_replace(az_span self, int32_t current_size, int32_t start, int32_t end,
   // The replaced size must be less or equal to current span size. Can't replace more than what
   // current is available. The size after replacing must be less than or equal to the size of self
   // span.
-  if (replaced_size > current_size || size_after_replace > az_span_size(self))
+  if (replaced_size > current_size || size_after_replace > self.size)
   {
     return AZ_ERROR_ARG;
   };
@@ -639,10 +600,10 @@ AZ_NODISCARD az_result _az_is_expected_span(az_span* self, az_span expected)
 {
   az_span actual_span = { 0 };
 
-  int32_t expected_size = az_span_size(expected);
+  int32_t expected_size = expected.size;
 
   // EOF because self is smaller than the expected span
-  if (expected_size > az_span_size(*self))
+  if (expected_size > *self.size)
   {
     return AZ_ERROR_EOF;
   }
@@ -663,7 +624,7 @@ AZ_NODISCARD az_result _az_is_expected_span(az_span* self, az_span expected)
 // Then return number of positions read with output parameter
 AZ_NODISCARD az_result _az_scan_until(az_span self, _az_predicate predicate, int32_t* out_index)
 {
-  for (int32_t index = 0; index < az_span_size(self); ++index)
+  for (int32_t index = 0; index < self.size; ++index)
   {
     az_span s = az_span_slice(self, index, -1);
     az_result predicate_result = predicate(s);

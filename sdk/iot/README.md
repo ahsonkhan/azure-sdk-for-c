@@ -87,7 +87,7 @@ void my_property_func()
 {
   //Initialize the property struct with the span
   az_iot_hub_client_properties props;
-  az_iot_hub_client_properties_init(&props, my_prop_span, az_span_size(my_prop_span));
+  az_iot_hub_client_properties_init(&props, my_prop_span, my_prop_span.size);
   //At this point, you are able to pass the `props` to other API's with property parameters.
 }
 ```

@@ -32,7 +32,7 @@ static AZ_NODISCARD az_result _az_credential_client_secret_request_token(
   uint8_t header_buf[_az_AAD_REQUEST_HEADER_BUF_SIZE];
   _az_http_request request = { 0 };
   AZ_RETURN_IF_FAILED(az_http_request_init(
-      &request, context, az_http_method_post(), url_span, az_span_size(url), AZ_SPAN_FROM_BUFFER(header_buf), body));
+      &request, context, az_http_method_post(), url_span, url.size, AZ_SPAN_FROM_BUFFER(header_buf), body));
 
   return _az_aad_request_token(&request, &credential->_internal.token);
 }

@@ -89,7 +89,7 @@ void test_az_http_pipeline_policy_telemetry()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -128,7 +128,7 @@ void test_az_http_pipeline_policy_apiversion()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -174,7 +174,7 @@ void test_az_http_pipeline_policy_uniquerequestid()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -277,7 +277,7 @@ void test_az_http_pipeline_policy_credential()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -324,7 +324,7 @@ void test_az_http_pipeline_policy_retry()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -369,7 +369,7 @@ void test_az_http_pipeline_policy_retry_with_header()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 
@@ -414,7 +414,7 @@ void test_az_http_pipeline_policy_retry_with_header_2()
 
   az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
   az_span remainder = az_span_copy(url_span, AZ_SPAN_FROM_STR("url"));
-  assert_int_equal(az_span_size(remainder), 97);
+  assert_int_equal(remainder.size, 97);
   az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
   _az_http_request hrb;
 

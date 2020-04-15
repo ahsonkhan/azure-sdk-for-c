@@ -143,7 +143,7 @@ AZ_NODISCARD az_result az_keyvault_keys_client_init(
   };
 
   // Copy url to client buffer so customer can re-use buffer on his/her side
-  int32_t uri_size = az_span_size(uri);
+  int32_t uri_size = uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(self->_internal.uri, uri_size);
   az_span_copy(self->_internal.uri, uri);
   self->_internal.uri = az_span_slice(self->_internal.uri, 0, uri_size);
@@ -247,7 +247,7 @@ AZ_NODISCARD az_result az_keyvault_keys_key_create(
   uint8_t url_buffer[AZ_HTTP_REQUEST_URL_BUF_SIZE];
   az_span request_url_span = AZ_SPAN_FROM_BUFFER(url_buffer);
   // copy url from client
-  int32_t uri_size = az_span_size(client->_internal.uri);
+  int32_t uri_size = client->_internal.uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(request_url_span, uri_size);
   az_span_copy(request_url_span, client->_internal.uri);
 
@@ -314,7 +314,7 @@ AZ_NODISCARD az_result az_keyvault_keys_key_get(
   uint8_t url_buffer[AZ_HTTP_REQUEST_URL_BUF_SIZE];
   az_span request_url_span = AZ_SPAN_FROM_BUFFER(url_buffer);
   // copy url from client
-  int32_t uri_size = az_span_size(client->_internal.uri);
+  int32_t uri_size = client->_internal.uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(request_url_span, uri_size);
   az_span_copy(request_url_span, client->_internal.uri);
 
@@ -336,7 +336,7 @@ AZ_NODISCARD az_result az_keyvault_keys_key_get(
   AZ_RETURN_IF_FAILED(az_http_request_append_path(&hrb, key_name));
 
   // Add key_version if requested
-  if (az_span_size(key_version) > 0)
+  if (key_version.size > 0)
   {
     AZ_RETURN_IF_FAILED(az_http_request_append_path(&hrb, key_version));
   }
@@ -356,7 +356,7 @@ AZ_NODISCARD az_result az_keyvault_keys_key_delete(
   uint8_t url_buffer[AZ_HTTP_REQUEST_URL_BUF_SIZE];
   az_span request_url_span = AZ_SPAN_FROM_BUFFER(url_buffer);
   // copy url from client
-  int32_t uri_size = az_span_size(client->_internal.uri);
+  int32_t uri_size = client->_internal.uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(request_url_span, uri_size);
   az_span_copy(request_url_span, client->_internal.uri);
 

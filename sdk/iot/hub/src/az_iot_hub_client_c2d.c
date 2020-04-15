@@ -23,8 +23,8 @@ AZ_NODISCARD az_result az_iot_hub_client_c2d_subscribe_topic_filter_get(
   AZ_PRECONDITION_VALID_SPAN(mqtt_topic_filter, 0, false);
   AZ_PRECONDITION_NOT_NULL(out_mqtt_topic_filter);
 
-  int32_t required_length = az_span_size(c2d_topic_prefix)
-      + az_span_size(client->_internal.device_id) + az_span_size(c2d_topic_suffix) + 1;
+  int32_t required_length = c2d_topic_prefix.size
+      + client->_internal.device_id.size + c2d_topic_suffix.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic_filter, required_length);
 
@@ -50,7 +50,7 @@ AZ_NODISCARD az_result az_iot_hub_client_c2d_received_topic_parse(
   az_span token;
   token = az_span_token(received_topic, c2d_topic_suffix, &received_topic);
   token = az_span_token(received_topic, c2d_topic_suffix, &received_topic);
-  AZ_RETURN_IF_FAILED(az_iot_hub_client_properties_init(&out_request->properties, token, az_span_size(token)));
+  AZ_RETURN_IF_FAILED(az_iot_hub_client_properties_init(&out_request->properties, token, token.size));
 
   return AZ_OK;
 }

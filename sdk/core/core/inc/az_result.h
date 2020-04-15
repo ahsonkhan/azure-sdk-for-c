@@ -54,7 +54,7 @@ enum
 #define AZ_RETURN_IF_NOT_ENOUGH_SIZE(span, required_space) \
   do \
   { \
-    if (az_span_size(span) < required_space) \
+    if (span.size < required_space) \
     { \
       return AZ_ERROR_INSUFFICIENT_SPAN_SIZE; \
     } \

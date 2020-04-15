@@ -62,17 +62,17 @@ static az_result read_configuration_entry(
   {
     printf("%s\n", hide_value ? "***" : env);
     az_span env_span = az_span_from_str(env);
-    AZ_RETURN_IF_NOT_ENOUGH_SIZE(buffer, az_span_size(env_span));
+    AZ_RETURN_IF_NOT_ENOUGH_SIZE(buffer, env_span.size);
     az_span_copy(buffer, env_span);
-    *out_value = az_span_slice(buffer, 0, az_span_size(env_span));
+    *out_value = az_span_slice(buffer, 0, env_span.size);
   }
   else if (default_value != NULL)
   {
     printf("%s\n", default_value);
     az_span default_span = az_span_from_str(default_value);
-    AZ_RETURN_IF_NOT_ENOUGH_SIZE(buffer, az_span_size(default_span));
+    AZ_RETURN_IF_NOT_ENOUGH_SIZE(buffer, default_span.size);
     az_span_copy(buffer, default_span);
-    *out_value = az_span_slice(buffer, 0, az_span_size(default_span));
+    *out_value = az_span_slice(buffer, 0, default_span.size);
   }
   else
   {
@@ -175,7 +175,7 @@ static int connect()
     return rc;
   }
 
-  mqtt_connect_options.username = (char*)az_span_ptr(username_span);
+  mqtt_connect_options.username = (char*)username_span.ptr;
   mqtt_connect_options.password = NULL; // Using X509 Client Certificate authentication.
 
   mqtt_ssl_options.keyStore = (char*)x509_cert_pem_file;

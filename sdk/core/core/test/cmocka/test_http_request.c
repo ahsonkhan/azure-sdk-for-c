@@ -54,7 +54,7 @@ void test_http_request(void** state)
 
     az_span url_span = AZ_SPAN_FROM_BUFFER(buf);
     az_span remainder = az_span_copy(url_span, hrb_url);
-    assert_int_equal(az_span_size(remainder), 100 - az_span_size(hrb_url));
+    assert_int_equal(remainder.size, 100 - hrb_url.size);
     az_span header_span = AZ_SPAN_FROM_BUFFER(header_buf);
     _az_http_request hrb;
 
@@ -63,24 +63,24 @@ void test_http_request(void** state)
         &az_context_app,
         az_http_method_get(),
         url_span,
-        az_span_size(hrb_url),
+        hrb_url.size,
         header_span,
         AZ_SPAN_FROM_STR("body")));
     assert_true(az_span_is_content_equal(hrb._internal.method, az_http_method_get()));
     assert_true(az_span_is_content_equal(hrb._internal.url, url_span));
-    assert_int_equal(az_span_size(hrb._internal.url), 100);
+    assert_int_equal(hrb._internal.url.size, 100);
     assert_int_equal(hrb._internal.url_length, 54);
     assert_true(hrb._internal.max_headers == 2);
     assert_true(hrb._internal.retry_headers_start_byte_offset == 0);
 
     TEST_EXPECT_SUCCESS(az_http_request_set_query_parameter(
         &hrb, hrb_param_api_version_name, hrb_param_api_version_token));
-    assert_int_equal(hrb._internal.url_length, az_span_size(hrb_url2));
+    assert_int_equal(hrb._internal.url_length, hrb_url2.size);
     assert_true(az_span_is_content_equal(az_span_slice(hrb._internal.url, 0, hrb._internal.url_length), hrb_url2));
 
     TEST_EXPECT_SUCCESS(az_http_request_set_query_parameter(
         &hrb, hrb_param_test_param_name, hrb_param_test_param_token));
-    assert_int_equal(hrb._internal.url_length, az_span_size(hrb_url3));
+    assert_int_equal(hrb._internal.url_length, hrb_url3.size);
     assert_true(az_span_is_content_equal(az_span_slice(hrb._internal.url, 0, hrb._internal.url_length), hrb_url3));
 
     TEST_EXPECT_SUCCESS(az_http_request_append_header(
@@ -94,14 +94,14 @@ void test_http_request(void** state)
     TEST_EXPECT_SUCCESS(az_http_request_append_header(
         &hrb, hrb_header_authorization_name, hrb_header_authorization_token1));
 
-    assert_true(az_span_size(hrb._internal.headers) / (int32_t)sizeof(az_pair) == 2);
+    assert_true(hrb._internal.headers.size / (int32_t)sizeof(az_pair) == 2);
     assert_true(hrb._internal.retry_headers_start_byte_offset == sizeof(az_pair));
 
     az_pair expected_headers1[2] = {
       { .key = hrb_header_content_type_name, .value = hrb_header_content_type_token },
       { .key = hrb_header_authorization_name, .value = hrb_header_authorization_token1 },
     };
-    for (uint16_t i = 0; i < az_span_size(hrb._internal.headers) / (int32_t)sizeof(az_pair); ++i)
+    for (uint16_t i = 0; i < hrb._internal.headers.size / (int32_t)sizeof(az_pair); ++i)
     {
       az_pair header = { 0 };
       TEST_EXPECT_SUCCESS(az_http_request_get_header(&hrb, i, &header));
@@ -116,14 +116,14 @@ void test_http_request(void** state)
     TEST_EXPECT_SUCCESS(az_http_request_append_header(
         &hrb, hrb_header_authorization_name, hrb_header_authorization_token2));
     assert_int_equal(hrb._internal.headers_length, 2);
-    assert_int_equal(az_span_size(hrb._internal.headers) / (int32_t)sizeof(az_pair), 2);
+    assert_int_equal(hrb._internal.headers.size / (int32_t)sizeof(az_pair), 2);
     assert_true(hrb._internal.retry_headers_start_byte_offset == sizeof(az_pair));
 
     az_pair expected_headers2[2] = {
       { .key = hrb_header_content_type_name, .value = hrb_header_content_type_token },
       { .key = hrb_header_authorization_name, .value = hrb_header_authorization_token2 },
     };
-    for (uint16_t i = 0; i < az_span_size(hrb._internal.headers) / (int32_t)sizeof(az_pair); ++i)
+    for (uint16_t i = 0; i < hrb._internal.headers.size / (int32_t)sizeof(az_pair); ++i)
     {
       az_pair header = { 0 };
       TEST_EXPECT_SUCCESS(az_http_request_get_header(&hrb, i, &header));
@@ -138,11 +138,11 @@ void test_http_request(void** state)
     az_span body;
     az_span url;
     assert_return_code(az_http_request_get_parts(&hrb, &method, &url, &body), AZ_OK);
-    assert_string_equal(az_span_ptr(method), az_span_ptr(az_http_method_get()));
-    assert_string_equal(az_span_ptr(body), az_span_ptr(AZ_SPAN_FROM_STR("body")));
+    assert_string_equal(method.ptr, az_http_method_get(.ptr));
+    assert_string_equal(body.ptr, AZ_SPAN_FROM_STR("body".ptr));
     assert_string_equal(
-        az_span_ptr(url),
-        az_span_ptr(AZ_SPAN_FROM_STR("https://antk-keyvault.vault.azure.net/secrets/Password/"
-                                     "path?api-version=7.0&test-param=token")));
+        url.ptr,
+        AZ_SPAN_FROM_STR("https://antk-keyvault.vault.azure.net/secrets/Password/"
+                                     "path?api-version=7.0&test-param=token".ptr));
   }
 }

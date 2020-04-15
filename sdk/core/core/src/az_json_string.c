@@ -123,13 +123,13 @@ AZ_NODISCARD az_span _az_json_esc_encode(uint8_t c)
  */
 AZ_NODISCARD az_result _az_span_reader_read_json_string_char(az_span* json_string, uint32_t* out)
 {
-  int32_t reader_length = az_span_size(*json_string);
+  int32_t reader_length = *json_string.size;
   if (reader_length == 0)
   {
     return AZ_ERROR_ITEM_NOT_FOUND;
   }
 
-  uint8_t const result = az_span_ptr(*json_string)[0];
+  uint8_t const result = *json_string.ptr[0];
   switch (result)
   {
     case '"':
@@ -140,11 +140,11 @@ AZ_NODISCARD az_result _az_span_reader_read_json_string_char(az_span* json_strin
     {
       // moving reader fw
       *json_string = az_span_slice(*json_string, 1, -1);
-      if (az_span_size(*json_string) == 0)
+      if (*json_string.size == 0)
       {
         return AZ_ERROR_EOF;
       }
-      uint8_t const c = az_span_ptr(*json_string)[0];
+      uint8_t const c = *json_string.ptr[0];
       *json_string = az_span_slice(*json_string, 1, -1);
 
       if (c == 'u')
@@ -153,11 +153,11 @@ AZ_NODISCARD az_result _az_span_reader_read_json_string_char(az_span* json_strin
         for (size_t i = 0; i < 4; ++i)
         {
           uint8_t digit = 0;
-          if (az_span_size(*json_string) == 0)
+          if (*json_string.size == 0)
           {
             return AZ_ERROR_EOF;
           }
-          AZ_RETURN_IF_FAILED(az_hex_to_digit(az_span_ptr(*json_string)[0], &digit));
+          AZ_RETURN_IF_FAILED(az_hex_to_digit(*json_string.ptr[0], &digit));
           r = (r << 4) + digit;
           *json_string = az_span_slice(*json_string, 1, -1);
         }

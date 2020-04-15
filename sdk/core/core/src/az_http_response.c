@@ -14,7 +14,7 @@
 
 AZ_NODISCARD AZ_INLINE az_result _az_is_char(az_span slice, uint8_t c)
 {
-  return az_span_ptr(slice)[0] == c ? AZ_OK : AZ_CONTINUE;
+  return slice.ptr[0] == c ? AZ_OK : AZ_CONTINUE;
 }
 
 static AZ_NODISCARD az_result _az_is_a_colon(az_span slice) { return _az_is_char(slice, ':'); }
@@ -35,14 +35,14 @@ static AZ_NODISCARD bool _az_is_http_whitespace(uint8_t c)
 
 static AZ_NODISCARD az_result _az_slice_is_not_http_whitespace(az_span slice)
 {
-  return _az_is_http_whitespace(az_span_ptr(slice)[0]) == true ? AZ_CONTINUE : AZ_OK;
+  return _az_is_http_whitespace(slice.ptr[0]) == true ? AZ_CONTINUE : AZ_OK;
 }
 
 /* PRIVATE Function. parse next  */
 static AZ_NODISCARD az_result _az_get_digit(az_span* self, uint8_t* save_here)
 {
 
-  uint8_t c_ptr = az_span_ptr(*self)[0];
+  uint8_t c_ptr = *self.ptr[0];
   if (!isdigit(c_ptr))
   {
     return AZ_ERROR_PARSER_UNEXPECTED_CHAR;
@@ -82,7 +82,7 @@ _az_get_http_status_line(az_span* self, az_http_response_status_line* out_status
   // status-code = 3DIGIT
   {
     uint64_t code = 0;
-    AZ_RETURN_IF_FAILED(az_span_to_uint64(az_span_init(az_span_ptr(*self), 3), &code));
+    AZ_RETURN_IF_FAILED(az_span_to_uint64(az_span_init(*self.ptr, 3), &code));
     out_status_line->status_code = (az_http_status_code)code;
     // move reader
     *self = az_span_slice(*self, 3, -1);
@@ -152,7 +152,7 @@ az_http_response_get_next_header(az_http_response* response, az_pair* out_header
 
   // check if we are at the end of all headers to change state to Body.
   // We keep state to Headers if current char is not '\r' (there is another header)
-  if (az_span_ptr(response->_internal.parser.remaining)[0] == '\r')
+  if (response->_internal.parser.remaining.ptr[0] == '\r')
   {
     AZ_RETURN_IF_FAILED(_az_is_expected_span(reader, AZ_SPAN_FROM_STR("\r\n")));
     response->_internal.parser.next_kind = _az_HTTP_RESPONSE_KIND_BODY;
@@ -196,7 +196,7 @@ az_http_response_get_next_header(az_http_response* response, az_pair* out_header
     int32_t offset_value_end = offset;
     while (true)
     {
-      uint8_t c = az_span_ptr(*reader)[offset];
+      uint8_t c = *reader.ptr[offset];
       offset += 1;
       if (c == '\r')
       {

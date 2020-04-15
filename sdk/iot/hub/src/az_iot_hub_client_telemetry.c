@@ -27,16 +27,16 @@ AZ_NODISCARD az_result az_iot_hub_client_telemetry_publish_topic_get(
 
   const az_span* const module_id = &(client->_internal.options.module_id);
 
-  int32_t required_length = az_span_size(telemetry_topic_prefix)
-      + az_span_size(client->_internal.device_id) + az_span_size(telemetry_topic_suffix);
-  int32_t module_id_length = az_span_size(*module_id);
+  int32_t required_length = telemetry_topic_prefix.size
+      + client->_internal.device_id.size + telemetry_topic_suffix.size;
+  int32_t module_id_length = *module_id.size;
   if (module_id_length > 0)
   {
-    required_length += az_span_size(telemetry_topic_modules_mid) + az_span_size(*module_id);
+    required_length += telemetry_topic_modules_mid.size + *module_id.size;
   }
   if (properties != NULL)
   {
-    required_length += az_span_size(properties->_internal.properties);
+    required_length += properties->_internal.properties.size;
   }
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic, required_length);

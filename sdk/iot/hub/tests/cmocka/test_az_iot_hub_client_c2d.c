@@ -166,20 +166,20 @@ static void test_az_iot_hub_client_c2d_subscribe_topic_filter_get_twice_succeed(
       == AZ_OK);
   assert_memory_equal(
       g_test_correct_subscribe_topic,
-      az_span_ptr(mqtt_sub_topic),
-      (size_t)az_span_size(mqtt_sub_topic));
-  assert_int_equal(az_span_size(mqtt_sub_topic), _az_COUNTOF(g_test_correct_subscribe_topic) - 1);
-  assert_int_equal(mqtt_sub_topic_buf[az_span_size(mqtt_sub_topic)], 0xFF);
+      mqtt_sub_topic.ptr,
+      (size_t)mqtt_sub_topic.size);
+  assert_int_equal(mqtt_sub_topic.size, _az_COUNTOF(g_test_correct_subscribe_topic) - 1);
+  assert_int_equal(mqtt_sub_topic_buf[mqtt_sub_topic.size], 0xFF);
 
   assert_true(
       az_iot_hub_client_c2d_subscribe_topic_filter_get(&client, mqtt_sub_topic, &mqtt_sub_topic)
       == AZ_OK);
   assert_memory_equal(
       g_test_correct_subscribe_topic,
-      az_span_ptr(mqtt_sub_topic),
-      (size_t)az_span_size(mqtt_sub_topic));
-  assert_int_equal(az_span_size(mqtt_sub_topic), _az_COUNTOF(g_test_correct_subscribe_topic) - 1);
-  assert_int_equal(mqtt_sub_topic_buf[az_span_size(mqtt_sub_topic)], 0xFF);
+      mqtt_sub_topic.ptr,
+      (size_t)mqtt_sub_topic.size);
+  assert_int_equal(mqtt_sub_topic.size, _az_COUNTOF(g_test_correct_subscribe_topic) - 1);
+  assert_int_equal(mqtt_sub_topic_buf[mqtt_sub_topic.size], 0xFF);
 }
 
 static void test_az_iot_hub_client_c2d_subscribe_topic_filter_get_small_buffer_fail(void** state)
@@ -197,7 +197,7 @@ static void test_az_iot_hub_client_c2d_subscribe_topic_filter_get_small_buffer_f
   assert_true(
       az_iot_hub_client_c2d_subscribe_topic_filter_get(&client, mqtt_sub_topic, &mqtt_sub_topic)
       == AZ_ERROR_INSUFFICIENT_SPAN_SIZE);
-  assert_int_equal(az_span_size(mqtt_sub_topic), _az_COUNTOF(g_test_correct_subscribe_topic) - 2);
+  assert_int_equal(mqtt_sub_topic.size, _az_COUNTOF(g_test_correct_subscribe_topic) - 2);
 }
 
 static void test_az_iot_hub_client_c2d_received_topic_parse_URL_DECODED_succeed(void** state)

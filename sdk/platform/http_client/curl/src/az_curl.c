@@ -44,7 +44,7 @@ static void _az_span_free(az_span* p)
   {
     return;
   }
-  free(az_span_ptr(*p));
+  free(*p.ptr);
   *p = AZ_SPAN_NULL;
 }
 
@@ -102,7 +102,7 @@ static AZ_NODISCARD az_result
 _az_span_append_header_to_buffer(az_span writable_buffer, az_pair header, az_span separator)
 {
   int32_t required_length
-      = az_span_size(header.key) + az_span_size(separator) + az_span_size(header.value) + 1;
+      = header.key.size + separator.size + header.value.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(writable_buffer, required_length);
 
@@ -149,8 +149,8 @@ static AZ_NODISCARD az_result _az_http_client_curl_add_header_to_curl_list(
   // allocate a buffer for header
   az_span writable_buffer;
   {
-    int32_t const buffer_size = az_span_size(header.key) + az_span_size(separator)
-        + az_span_size(header.value) + az_span_size(AZ_SPAN_FROM_STR("\0"));
+    int32_t const buffer_size = header.key.size + separator.size
+        + header.value.size + AZ_SPAN_FROM_STR("\0".size);
 
     AZ_RETURN_IF_FAILED(_az_span_malloc(buffer_size, &writable_buffer));
   }
@@ -161,7 +161,7 @@ static AZ_NODISCARD az_result _az_http_client_curl_add_header_to_curl_list(
   // attach header only when write was OK
   if (az_succeeded(result))
   {
-    char const* const buffer = (char const*)az_span_ptr(writable_buffer);
+    char const* const buffer = (char const*)writable_buffer.ptr;
     result = _az_http_client_curl_slist_append(p_list, buffer);
   }
 
@@ -204,7 +204,7 @@ _az_http_client_curl_build_headers(_az_http_request* p_request, struct curl_slis
 static AZ_NODISCARD az_result
 _az_http_client_curl_append_url(az_span writable_buffer, az_span url_from_request)
 {
-  int32_t required_length = az_span_size(url_from_request) + 1;
+  int32_t required_length = url_from_request.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(writable_buffer, required_length);
 
@@ -236,7 +236,7 @@ static size_t _az_http_client_curl_write_to_span(
 
   az_span const span_for_content = az_span_init((uint8_t*)contents, (int32_t)expected_size);
 
-  if (az_span_size(*user_buffer_builder) < az_span_size(span_for_content))
+  if (*user_buffer_builder.size < span_for_content.size)
   {
     return expected_size + 1;
   }
@@ -289,11 +289,11 @@ _az_http_client_curl_send_post_request(CURL* p_curl, _az_http_request const* p_r
   // Method
   az_span body = { 0 };
   int32_t const required_length
-      = az_span_size(p_request->_internal.body) + az_span_size(AZ_SPAN_FROM_STR("\0"));
+      = p_request->_internal.body.size + AZ_SPAN_FROM_STR("\0".size);
 
   AZ_RETURN_IF_FAILED(_az_span_malloc(required_length, &body));
 
-  char* b = (char*)az_span_ptr(body);
+  char* b = (char*)body.ptr;
   az_result res_code = az_span_to_str(b, required_length, p_request->_internal.body);
 
   if (az_succeeded(res_code))
@@ -340,7 +340,7 @@ static int32_t _az_http_client_curl_upload_read_callback(
   if (dst_buffer_size < 1)
     return CURL_READFUNC_ABORT;
 
-  int32_t userdata_length = az_span_size(*upload_content);
+  int32_t userdata_length = *upload_content.size;
 
   // Return if nothing to copy
   if (userdata_length < 1)
@@ -348,7 +348,7 @@ static int32_t _az_http_client_curl_upload_read_callback(
 
   int32_t size_of_copy = (userdata_length < dst_buffer_size) ? userdata_length : dst_buffer_size;
 
-  memcpy(dst, az_span_ptr(*upload_content), (size_t)size_of_copy);
+  memcpy(dst, *upload_content.ptr, (size_t)size_of_copy);
 
   // Update the userdata span
   //  ptr will point to remaining data to be copied
@@ -380,7 +380,7 @@ _az_http_client_curl_send_upload_request(CURL* p_curl, _az_http_request const* p
 
   // Set the size of the upload
   AZ_RETURN_IF_CURL_FAILED(
-      curl_easy_setopt(p_curl, CURLOPT_INFILESIZE, (curl_off_t)az_span_size(body)));
+      curl_easy_setopt(p_curl, CURLOPT_INFILESIZE, (curl_off_t)body.size));
 
   // Do the curl work
   // curl_easy_perform does not return until the CURLOPT_READFUNCTION callbacks complete.
@@ -446,12 +446,12 @@ _az_http_client_curl_setup_url(CURL* p_curl, _az_http_request const* p_request)
 
   if (az_succeeded(result))
   {
-    char* buffer = (char*)az_span_ptr(writable_buffer);
+    char* buffer = (char*)writable_buffer.ptr;
     result = _az_http_client_curl_code_to_result(curl_easy_setopt(p_curl, CURLOPT_URL, buffer));
   }
 
   // free used buffer before anything else
-  memset(az_span_ptr(writable_buffer), 0, (size_t)az_span_size(writable_buffer));
+  memset(writable_buffer.ptr, 0, (size_t)writable_buffer.size);
   _az_span_free(&writable_buffer);
 
   return result;

@@ -375,11 +375,11 @@ static void test_az_iot_hub_client_methods_received_topic_parse_succeed(void** s
   assert_true(
       az_iot_hub_client_methods_received_topic_parse(&client, received_topic, &out_request)
       == AZ_OK);
-  assert_int_equal(az_span_size(out_request.name), _az_COUNTOF(expected_name) - 1);
-  assert_memory_equal(az_span_ptr(out_request.name), expected_name, _az_COUNTOF(expected_name) - 1);
-  assert_int_equal(az_span_size(out_request.request_id), _az_COUNTOF(expected_request_id) - 1);
+  assert_int_equal(out_request.name.size, _az_COUNTOF(expected_name) - 1);
+  assert_memory_equal(out_request.name.ptr, expected_name, _az_COUNTOF(expected_name) - 1);
+  assert_int_equal(out_request.request_id.size, _az_COUNTOF(expected_request_id) - 1);
   assert_memory_equal(
-      az_span_ptr(out_request.request_id),
+      out_request.request_id.ptr,
       expected_request_id,
       _az_COUNTOF(expected_request_id) - 1);
 }

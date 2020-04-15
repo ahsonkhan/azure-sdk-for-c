@@ -26,41 +26,41 @@ static void az_span_token_success(void** state)
 
   // token: ""
   token = az_span_token(span, delim, &out_span);
-  assert_non_null(az_span_ptr(token));
-  assert_true(az_span_size(token) == 0);
-  assert_true(az_span_ptr(out_span) == (az_span_ptr(span) + az_span_size(delim)));
-  assert_true(az_span_size(out_span) == (az_span_size(span) - az_span_size(delim)));
+  assert_non_null(token.ptr);
+  assert_true(token.size == 0);
+  assert_true(out_span.ptr == (span.ptr + delim.size));
+  assert_true(out_span.size == (span.size - delim.size));
 
   // token: "defg" (span+3)
   span = out_span;
 
   token = az_span_token(span, delim, &out_span);
-  assert_true(az_span_ptr(token) == az_span_ptr(span));
-  assert_int_equal(az_span_size(token), 4);
+  assert_true(token.ptr == span.ptr);
+  assert_int_equal(token.size, 4);
   assert_true(
-      az_span_ptr(out_span) == (az_span_ptr(span) + az_span_size(token) + az_span_size(delim)));
+      out_span.ptr == (span.ptr + token.size + delim.size));
   assert_true(
-      az_span_size(out_span) == (az_span_size(span) - az_span_size(token) - az_span_size(delim)));
+      out_span.size == (span.size - token.size - delim.size));
 
   // token: "defg" (span+10)
   span = out_span;
 
   token = az_span_token(span, delim, &out_span);
-  assert_true(az_span_ptr(token) == az_span_ptr(span));
-  assert_int_equal(az_span_size(token), 4);
+  assert_true(token.ptr == span.ptr);
+  assert_int_equal(token.size, 4);
   assert_true(
-      az_span_ptr(out_span) == (az_span_ptr(span) + az_span_size(token) + az_span_size(delim)));
+      out_span.ptr == (span.ptr + token.size + delim.size));
   assert_true(
-      az_span_size(out_span) == (az_span_size(span) - az_span_size(token) - az_span_size(delim)));
+      out_span.size == (span.size - token.size - delim.size));
 
   // token: "defg" (span+17)
   span = out_span;
 
   token = az_span_token(span, delim, &out_span);
-  assert_true(az_span_ptr(token) == az_span_ptr(span));
-  assert_int_equal(az_span_size(token), 4);
-  assert_true(az_span_ptr(out_span) == NULL);
-  assert_true(az_span_size(out_span) == 0);
+  assert_true(token.ptr == span.ptr);
+  assert_int_equal(token.size, 4);
+  assert_true(out_span.ptr == NULL);
+  assert_true(out_span.size == 0);
 
   // Out_span is empty.
   span = out_span;

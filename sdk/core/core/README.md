@@ -63,7 +63,7 @@ az_span az_span_copy_uint8(az_span destination, uint8_t byte);
 and then call this function to get the address of the 0-terminated string:
 
 ```C
-char* str = (char*) az_span_ptr(span); // str points to a 0-terminated string
+char* str = (char*) span.ptr; // str points to a 0-terminated string
 ```
 
 Or, you can call this function to copy the string in the `az_span` to your own `char*` buffer; this function will 0-termiante the string in the `char*` buffer:
@@ -107,7 +107,7 @@ Log classifications allow your application to select which specific log messages
    ```C
    void test_log_func(az_log_classification classification, az_span message)
    {
-      printf("%.*s\n", az_span_size(message), az_span_ptr(message));
+      printf("%.*s\n", message.size, message.ptr);
    }
 
    int main()

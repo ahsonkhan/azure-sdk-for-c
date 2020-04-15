@@ -25,7 +25,7 @@ static az_result _az_add_telemetry_property(
     bool add_separator,
     az_span* out_mqtt_topic)
 {
-  int32_t required_length = az_span_size(property_name) + az_span_size(property_value) + 1;
+  int32_t required_length = property_name.size + property_value.size + 1;
   if (add_separator)
   {
     required_length++;
@@ -69,7 +69,7 @@ AZ_NODISCARD az_result az_iot_pnp_client_telemetry_get_publish_topic(
       az_span_slice(mqtt_topic, written, -1),
       &written_span));
 
-  written += az_span_size(written_span);
+  written += written_span.size;
 
   AZ_RETURN_IF_FAILED(_az_add_telemetry_property(
       az_span_slice(mqtt_topic, written, -1),
@@ -78,9 +78,9 @@ AZ_NODISCARD az_result az_iot_pnp_client_telemetry_get_publish_topic(
       false,
       &written_span));
 
-  written += az_span_size(written_span);
+  written += written_span.size;
 
-  if (az_span_ptr(client->_internal.options.content_type) != NULL)
+  if (client->_internal.options.content_type.ptr != NULL)
   {
     AZ_RETURN_IF_FAILED(_az_add_telemetry_property(
         az_span_slice(mqtt_topic, written, -1),
@@ -89,10 +89,10 @@ AZ_NODISCARD az_result az_iot_pnp_client_telemetry_get_publish_topic(
         true,
         &written_span));
 
-    written += az_span_size(written_span);
+    written += written_span.size;
   }
 
-  if (az_span_ptr(client->_internal.options.content_encoding) != NULL)
+  if (client->_internal.options.content_encoding.ptr != NULL)
   {
     AZ_RETURN_IF_FAILED(_az_add_telemetry_property(
         az_span_slice(mqtt_topic, written, -1),
@@ -101,7 +101,7 @@ AZ_NODISCARD az_result az_iot_pnp_client_telemetry_get_publish_topic(
         true,
         &written_span));
 
-    written += az_span_size(written_span);
+    written += written_span.size;
   }
 
   *out_mqtt_topic = az_span_slice(mqtt_topic, 0, written);

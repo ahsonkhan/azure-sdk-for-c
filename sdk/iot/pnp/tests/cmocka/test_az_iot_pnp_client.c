@@ -100,8 +100,8 @@ static void test_az_iot_pnp_client_init_succeed(void** state)
           &client, test_device_hostname, test_device_id, test_root_interface_name, NULL),
       AZ_OK);
 
-  assert_non_null(az_span_ptr(client._internal.iot_hub_client._internal.iot_hub_hostname));
-  assert_string_equal(TEST_ROOT_INTERFACE_NAME, az_span_ptr(client._internal.root_interface_name));
+  assert_non_null(client._internal.iot_hub_client._internal.iot_hub_hostname.ptr);
+  assert_string_equal(TEST_ROOT_INTERFACE_NAME, client._internal.root_interface_name.ptr);
 }
 
 static void test_az_iot_pnp_client_init_custom_options_succeed(void** state)
@@ -119,13 +119,13 @@ static void test_az_iot_pnp_client_init_custom_options_succeed(void** state)
           &client, test_device_hostname, test_device_id, test_root_interface_name, &options),
       AZ_OK);
 
-  assert_non_null(az_span_ptr(client._internal.iot_hub_client._internal.iot_hub_hostname));
+  assert_non_null(client._internal.iot_hub_client._internal.iot_hub_hostname.ptr);
   assert_string_equal(
-      TEST_USER_AGENT, az_span_ptr(client._internal.iot_hub_client._internal.options.user_agent));
-  assert_string_equal(TEST_ROOT_INTERFACE_NAME, az_span_ptr(client._internal.root_interface_name));
-  assert_string_equal(TEST_CONTENT_TYPE, az_span_ptr(client._internal.options.content_type));
+      TEST_USER_AGENT, client._internal.iot_hub_client._internal.options.user_agent.ptr);
+  assert_string_equal(TEST_ROOT_INTERFACE_NAME, client._internal.root_interface_name.ptr);
+  assert_string_equal(TEST_CONTENT_TYPE, client._internal.options.content_type.ptr);
   assert_string_equal(
-      TEST_CONTENT_ENCODING, az_span_ptr(client._internal.options.content_encoding));
+      TEST_CONTENT_ENCODING, client._internal.options.content_encoding.ptr);
 }
 
 static void test_az_iot_pnp_client_get_user_name_succeed(void** state)
@@ -142,10 +142,10 @@ static void test_az_iot_pnp_client_get_user_name_succeed(void** state)
   az_span test_span = az_span_init(test_span_buffer, _az_COUNTOF(test_span_buffer));
   assert_int_equal(az_iot_pnp_client_get_user_name(&client, test_span, &test_span), AZ_OK);
 
-  assert_int_equal(az_span_size(test_span), _az_COUNTOF(test_correct_pnp_user_name) - 1);
+  assert_int_equal(test_span.size, _az_COUNTOF(test_correct_pnp_user_name) - 1);
   assert_memory_equal(
       test_correct_pnp_user_name,
-      az_span_ptr(test_span),
+      test_span.ptr,
       _az_COUNTOF(test_correct_pnp_user_name) - 1);
 }
 
@@ -186,10 +186,10 @@ static void test_az_iot_pnp_client_get_user_name_user_options_succeed(void** sta
   assert_int_equal(az_iot_pnp_client_get_user_name(&client, test_span, &test_span), AZ_OK);
 
   assert_int_equal(
-      az_span_size(test_span), _az_COUNTOF(test_correct_pnp_user_name_with_user_agent) - 1);
+      test_span.size, _az_COUNTOF(test_correct_pnp_user_name_with_user_agent) - 1);
   assert_memory_equal(
       test_correct_pnp_user_name_with_user_agent,
-      az_span_ptr(test_span),
+      test_span.ptr,
       _az_COUNTOF(test_correct_pnp_user_name_with_user_agent) - 1);
 }
 

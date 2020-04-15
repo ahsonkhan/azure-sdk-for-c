@@ -28,8 +28,8 @@ static az_http_status_code const _default_status_codes[] = {
 
 static AZ_NODISCARD int32_t _az_span_diff(az_span new_span, az_span old_span)
 {
-  int32_t answer = az_span_size(old_span) - az_span_size(new_span);
-  AZ_PRECONDITION(answer == (int32_t)(az_span_ptr(new_span) - az_span_ptr(old_span)));
+  int32_t answer = old_span.size - new_span.size;
+  AZ_PRECONDITION(answer == (int32_t)(new_span.ptr - old_span.ptr));
   return answer;
 }
 
@@ -51,19 +51,19 @@ AZ_INLINE az_result _az_http_policy_retry_append_http_retry_msg(
     az_span* ref_log_msg)
 {
   az_span retry_count_string = AZ_SPAN_FROM_STR("HTTP Retry attempt #");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(*ref_log_msg, az_span_size(retry_count_string));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(*ref_log_msg, retry_count_string.size);
   az_span remainder = az_span_copy(*ref_log_msg, retry_count_string);
 
   AZ_RETURN_IF_FAILED(az_span_copy_i32toa(remainder, (int32_t)attempt, &remainder));
 
   az_span infix_string = AZ_SPAN_FROM_STR(" will be made in ");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(infix_string));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, infix_string.size);
   remainder = az_span_copy(remainder, infix_string);
 
   AZ_RETURN_IF_FAILED(az_span_copy_i32toa(remainder, delay_msec, &remainder));
 
   az_span suffix_string = AZ_SPAN_FROM_STR("ms.");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(suffix_string));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, suffix_string.size);
   remainder = az_span_copy(remainder, suffix_string);
 
   *ref_log_msg = az_span_slice(*ref_log_msg, 0, _az_span_diff(remainder, *ref_log_msg));

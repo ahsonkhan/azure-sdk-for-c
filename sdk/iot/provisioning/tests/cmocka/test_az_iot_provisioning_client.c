@@ -46,8 +46,8 @@ static void test_az_iot_provisioning_client_default_options_get_connect_info_suc
   ret = az_iot_provisioning_client_id_get(&client, client_id, &client_id);
   assert_int_equal(AZ_OK, ret);
   assert_memory_equal(
-      az_span_ptr(test_registration_id), az_span_ptr(client_id), (size_t)az_span_size(client_id));
-  assert_int_equal(0xCC, client_id_buffer[az_span_size(client_id)]);
+      test_registration_id.ptr, client_id.ptr, (size_t)client_id.size);
+  assert_int_equal(0xCC, client_id_buffer[client_id.size]);
 
   uint8_t username_buffer[128];
   az_span username = AZ_SPAN_FROM_BUFFER(username_buffer);
@@ -60,8 +60,8 @@ static void test_az_iot_provisioning_client_default_options_get_connect_info_suc
   ret = az_iot_provisioning_client_user_name_get(&client, username, &username);
   assert_int_equal(AZ_OK, ret);
   assert_memory_equal(
-      az_span_ptr(expected_username), az_span_ptr(username), (size_t)az_span_size(username));
-  assert_int_equal(0xCC, username_buffer[az_span_size(username)]);
+      expected_username.ptr, username.ptr, (size_t)username.size);
+  assert_int_equal(0xCC, username_buffer[username.size]);
 }
 
 static void test_az_iot_provisioning_client_custom_options_get_username_succeed()
@@ -85,8 +85,8 @@ static void test_az_iot_provisioning_client_custom_options_get_username_succeed(
   ret = az_iot_provisioning_client_user_name_get(&client, username, &username);
   assert_int_equal(AZ_OK, ret);
   assert_memory_equal(
-      az_span_ptr(expected_username), az_span_ptr(username), (size_t)az_span_size(username));
-  assert_int_equal(0xCC, username_buffer[az_span_size(username)]);
+      expected_username.ptr, username.ptr, (size_t)username.size);
+  assert_int_equal(0xCC, username_buffer[username.size]);
 }
 
 static void test_az_iot_provisioning_client_get_subscribe_topic_filter_succeed()
@@ -101,8 +101,8 @@ static void test_az_iot_provisioning_client_get_subscribe_topic_filter_succeed()
   az_result ret
       = az_iot_provisioning_client_register_subscribe_topic_filter_get(&client, topic, &topic);
   assert_int_equal(AZ_OK, ret);
-  assert_memory_equal(az_span_ptr(expected_topic), az_span_ptr(topic), (size_t)az_span_size(topic));
-  assert_int_equal(0xCC, topic_buffer[az_span_size(topic)]);
+  assert_memory_equal(expected_topic.ptr, topic.ptr, (size_t)topic.size);
+  assert_int_equal(0xCC, topic_buffer[topic.size]);
 }
 
 static void test_az_iot_provisioning_client_get_register_publish_topic_filter_succeed()
@@ -117,8 +117,8 @@ static void test_az_iot_provisioning_client_get_register_publish_topic_filter_su
 
   az_result ret = az_iot_provisioning_client_register_publish_topic_get(&client, topic, &topic);
   assert_int_equal(AZ_OK, ret);
-  assert_memory_equal(az_span_ptr(expected_topic), az_span_ptr(topic), (size_t)az_span_size(topic));
-  assert_int_equal(0xCC, topic_buffer[az_span_size(topic)]);
+  assert_memory_equal(expected_topic.ptr, topic.ptr, (size_t)topic.size);
+  assert_int_equal(0xCC, topic_buffer[topic.size]);
 }
 
 static void test_az_iot_provisioning_client_get_operation_status_publish_topic_filter_succeed()
@@ -142,8 +142,8 @@ static void test_az_iot_provisioning_client_get_operation_status_publish_topic_f
       &client, &response, topic, &topic);
 
   assert_int_equal(AZ_OK, ret);
-  assert_memory_equal(az_span_ptr(expected_topic), az_span_ptr(topic), (size_t)az_span_size(topic));
-  assert_int_equal(0xCC, topic_buffer[az_span_size(topic)]);
+  assert_memory_equal(expected_topic.ptr, topic.ptr, (size_t)topic.size);
+  assert_int_equal(0xCC, topic_buffer[topic.size]);
 }
 
 #ifdef _MSC_VER

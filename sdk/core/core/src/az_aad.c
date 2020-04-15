@@ -28,8 +28,8 @@ AZ_NODISCARD az_result _az_token_set(_az_token* self, _az_token const* new_token
 
 static AZ_NODISCARD int32_t _az_span_diff(az_span new_span, az_span old_span)
 {
-  int32_t answer = az_span_size(old_span) - az_span_size(new_span);
-  AZ_PRECONDITION(answer == (int32_t)(az_span_ptr(new_span) - az_span_ptr(old_span)));
+  int32_t answer = old_span.size - new_span.size;
+  AZ_PRECONDITION(answer == (int32_t)(new_span.ptr - old_span.ptr));
   return answer;
 }
 
@@ -37,13 +37,13 @@ static AZ_NODISCARD int32_t _az_span_diff(az_span new_span, az_span old_span)
 AZ_NODISCARD az_result _az_aad_build_url(az_span url, az_span tenant_id, az_span* out_url)
 {
   az_span root_url = AZ_SPAN_FROM_STR("https://login.microsoftonline.com/");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(url, az_span_size(root_url));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(url, root_url.size);
   az_span remainder = az_span_copy(url, root_url);
 
   AZ_RETURN_IF_FAILED(az_span_copy_url_encode(remainder, tenant_id, &remainder));
 
   az_span oath_token = AZ_SPAN_FROM_STR("/oauth2/v2.0/token");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(oath_token));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, oath_token.size);
   remainder = az_span_copy(remainder, oath_token);
 
   *out_url = az_span_slice(url, 0, _az_span_diff(remainder, url));
@@ -61,21 +61,21 @@ AZ_NODISCARD az_result _az_aad_build_body(
 {
   az_span grant_type_and_client_id_key
       = AZ_SPAN_FROM_STR("grant_type=client_credentials&client_id=");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(body, az_span_size(grant_type_and_client_id_key));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(body, grant_type_and_client_id_key.size);
   az_span remainder = az_span_copy(body, grant_type_and_client_id_key);
 
   AZ_RETURN_IF_FAILED(az_span_copy_url_encode(remainder, client_id, &remainder));
 
   az_span scope_key = AZ_SPAN_FROM_STR("&scope=");
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(scope_key));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, scope_key.size);
   remainder = az_span_copy(remainder, scope_key);
 
   AZ_RETURN_IF_FAILED(az_span_copy_url_encode(remainder, scopes, &remainder));
 
-  if (az_span_size(client_secret) > 0)
+  if (client_secret.size > 0)
   {
     az_span client_secret_key = AZ_SPAN_FROM_STR("&client_secret=");
-    AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(client_secret_key));
+    AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, client_secret_key.size);
     remainder = az_span_copy(remainder, client_secret_key);
 
     AZ_RETURN_IF_FAILED(az_span_copy_url_encode(remainder, client_secret, &remainder));
@@ -156,7 +156,7 @@ AZ_NODISCARD az_result _az_aad_request_token(_az_http_request* request, _az_toke
 
   az_span new_token_span = AZ_SPAN_FROM_BUFFER(new_token._internal.token);
   az_span remainder = az_span_copy(new_token_span, AZ_SPAN_FROM_STR("Bearer "));
-  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, az_span_size(access_token));
+  AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, access_token.size);
   remainder = az_span_copy(remainder, access_token);
 
   new_token._internal.token_length = (int16_t)_az_span_diff(remainder, new_token_span);

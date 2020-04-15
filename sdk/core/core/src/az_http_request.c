@@ -16,7 +16,7 @@
 
 static AZ_NODISCARD az_result _az_is_question_mark(az_span slice)
 {
-  return az_span_ptr(slice)[0] == '?' ? AZ_OK : AZ_CONTINUE;
+  return slice.ptr[0] == '?' ? AZ_OK : AZ_CONTINUE;
 }
 
 AZ_NODISCARD az_result az_http_request_init(
@@ -50,7 +50,7 @@ AZ_NODISCARD az_result az_http_request_init(
                                 .headers = headers_buffer,
                                 .headers_length = 0,
                                 .max_headers
-                                = az_span_size(headers_buffer) / (int32_t)sizeof(az_pair),
+                                = headers_buffer.size / (int32_t)sizeof(az_pair),
                                 .retry_headers_start_byte_offset = 0,
                                 .body = body,
                             } };
@@ -78,8 +78,8 @@ AZ_NODISCARD az_result az_http_request_append_path(_az_http_request* p_request, 
   p_request->_internal.url_length++;
 
   AZ_RETURN_IF_FAILED(_az_span_replace(p_request->_internal.url, p_request->_internal.url_length, query_start, query_start, path));
-  query_start += az_span_size(path);
-  p_request->_internal.url_length += az_span_size(path);
+  query_start += path.size;
+  p_request->_internal.url_length += path.size;
 
   // update query start
   if (url_with_question_mark)
@@ -98,9 +98,9 @@ az_http_request_set_query_parameter(_az_http_request* p_request, az_span name, a
   AZ_PRECONDITION_VALID_SPAN(value, 1, false);
 
   // name or value can't be empty
-  AZ_PRECONDITION(az_span_size(name) > 0 && az_span_size(value) > 0);
+  AZ_PRECONDITION(name.size > 0 && value.size > 0);
 
-  int32_t required_length = az_span_size(name) + az_span_size(value) + 2;
+  int32_t required_length = name.size + value.size + 2;
 
   az_span url_remainder
       = az_span_slice(p_request->_internal.url, p_request->_internal.url_length, -1);
@@ -144,7 +144,7 @@ az_http_request_append_header(_az_http_request* p_request, az_span key, az_span 
   AZ_PRECONDITION_VALID_SPAN(key, 1, false);
   AZ_PRECONDITION_VALID_SPAN(value, 1, false);
 
-  AZ_PRECONDITION(az_span_size(key) > 0 || az_span_size(value) > 0);
+  AZ_PRECONDITION(key.size > 0 || value.size > 0);
 
   az_span headers = p_request->_internal.headers;
 
@@ -172,7 +172,7 @@ az_http_request_get_header(_az_http_request const* request, int32_t index, az_pa
     return AZ_ERROR_ARG;
   }
 
-  *out_header = ((az_pair*)az_span_ptr(request->_internal.headers))[index];
+  *out_header = ((az_pair*)request->_internal.headers.ptr)[index];
   return AZ_OK;
 }
 

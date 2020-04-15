@@ -50,15 +50,15 @@ AZ_NODISCARD az_result az_iot_hub_client_user_name_get(
   const az_span* const module_id = &(client->_internal.options.module_id);
   const az_span* const user_agent = &(client->_internal.options.user_agent);
 
-  int32_t required_length = az_span_size(client->_internal.iot_hub_hostname)
-      + az_span_size(client->_internal.device_id) + az_span_size(hub_service_api_version) + 1;
-  if (az_span_size(*module_id) > 0)
+  int32_t required_length = client->_internal.iot_hub_hostname.size
+      + client->_internal.device_id.size + hub_service_api_version.size + 1;
+  if (*module_id.size > 0)
   {
-    required_length += az_span_size(*module_id) + 1;
+    required_length += *module_id.size + 1;
   }
-  if (az_span_size(*user_agent) > 0)
+  if (*user_agent.size > 0)
   {
-    required_length += az_span_size(*user_agent) + 1;
+    required_length += *user_agent.size + 1;
   }
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_user_name, required_length);
@@ -67,7 +67,7 @@ AZ_NODISCARD az_result az_iot_hub_client_user_name_get(
   remainder = az_span_copy_uint8(remainder, hub_client_forward_slash);
   remainder = az_span_copy(remainder, client->_internal.device_id);
 
-  if (az_span_size(*module_id) > 0)
+  if (*module_id.size > 0)
   {
     remainder = az_span_copy_uint8(remainder, hub_client_forward_slash);
     remainder = az_span_copy(remainder, *module_id);
@@ -75,9 +75,9 @@ AZ_NODISCARD az_result az_iot_hub_client_user_name_get(
 
   remainder = az_span_copy(remainder, hub_service_api_version);
 
-  if (az_span_size(*user_agent) > 0)
+  if (*user_agent.size > 0)
   {
-    remainder = az_span_copy_uint8(remainder, *az_span_ptr(hub_client_param_separator_span));
+    remainder = az_span_copy_uint8(remainder, *hub_client_param_separator_span.ptr);
     az_span_copy(remainder, *user_agent);
   }
 
@@ -97,17 +97,17 @@ AZ_NODISCARD az_result az_iot_hub_client_id_get(
 
   const az_span* const module_id = &(client->_internal.options.module_id);
 
-  int32_t required_length = az_span_size(client->_internal.device_id);
-  if (az_span_size(*module_id) > 0)
+  int32_t required_length = client->_internal.device_id.size;
+  if (*module_id.size > 0)
   {
-    required_length += az_span_size(*module_id) + 1;
+    required_length += *module_id.size + 1;
   }
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_client_id, required_length);
 
   az_span remainder = az_span_copy(mqtt_client_id, client->_internal.device_id);
 
-  if (az_span_size(*module_id) > 0)
+  if (*module_id.size > 0)
   {
     remainder = az_span_copy_uint8(remainder, hub_client_forward_slash);
     az_span_copy(remainder, *module_id);
@@ -145,7 +145,7 @@ AZ_NODISCARD az_result az_iot_hub_client_properties_append(
 
   az_span remainder = az_span_slice(properties->_internal.properties, prop_length, -1);
 
-  int32_t required_length = az_span_size(name) + az_span_size(value) + 1;
+  int32_t required_length = name.size + value.size + 1;
   
   if (prop_length > 0)
   {
@@ -156,11 +156,11 @@ AZ_NODISCARD az_result az_iot_hub_client_properties_append(
 
   if (prop_length > 0)
   {
-    remainder = az_span_copy_uint8(remainder, *az_span_ptr(hub_client_param_separator_span));
+    remainder = az_span_copy_uint8(remainder, *hub_client_param_separator_span.ptr);
   }
 
   remainder = az_span_copy(remainder, name);
-  remainder = az_span_copy_uint8(remainder, *az_span_ptr(hub_client_param_equals_span));
+  remainder = az_span_copy_uint8(remainder, *hub_client_param_equals_span.ptr);
   az_span_copy(remainder, value);
 
   properties->_internal.properties_length += required_length;
@@ -180,7 +180,7 @@ AZ_NODISCARD az_result az_iot_hub_client_properties_find(
   az_span remaining
       = az_span_slice(properties->_internal.properties, 0, properties->_internal.properties_length);
 
-  while (az_span_size(remaining) != 0)
+  while (remaining.size != 0)
   {
     az_span delim_span = az_span_token(remaining, hub_client_param_equals_span, &remaining);
     if (az_span_is_content_equal(delim_span, name))
@@ -219,14 +219,14 @@ az_iot_hub_client_properties_next(az_iot_hub_client_properties* properties, az_p
 
   out->key = az_span_token(prop_span, hub_client_param_equals_span, &remainder);
   out->value = az_span_token(remainder, hub_client_param_separator_span, &remainder);
-  if (az_span_size(remainder) == 0)
+  if (remainder.size == 0)
   {
     properties->_internal.current_property_index = (uint32_t)prop_length;
   }
   else
   {
     properties->_internal.current_property_index
-        = (uint32_t)(az_span_ptr(remainder) - az_span_ptr(properties->_internal.properties));
+        = (uint32_t)(remainder.ptr - properties->_internal.properties.ptr);
   }
 
   return AZ_OK;

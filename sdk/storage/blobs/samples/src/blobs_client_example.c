@@ -34,7 +34,7 @@ az_storage_blobs_blob_download(az_storage_blobs_blob_client* client, az_http_res
   // create request buffer TODO: define size for a getKey Request
   uint8_t url_buffer[1024 * 4];
   az_span request_url_span = AZ_SPAN_FROM_BUFFER(url_buffer);
-  int32_t uri_size = az_span_size(client->_internal.uri);
+  int32_t uri_size = client->_internal.uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(request_url_span, uri_size);
   az_span_copy(request_url_span, client->_internal.uri);
 
@@ -65,7 +65,7 @@ az_storage_blobs_blob_delete(az_storage_blobs_blob_client* client, az_http_respo
   // create request buffer TODO: define size for blob delete
   uint8_t url_buffer[1024 * 4];
   az_span request_url_span = AZ_SPAN_FROM_BUFFER(url_buffer);
-  int32_t uri_size = az_span_size(client->_internal.uri);
+  int32_t uri_size = client->_internal.uri.size;
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(request_url_span, uri_size);
   az_span_copy(request_url_span, client->_internal.uri);
 

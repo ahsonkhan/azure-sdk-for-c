@@ -21,8 +21,8 @@
 
 static AZ_NODISCARD int32_t _az_span_diff(az_span new_span, az_span old_span)
 {
-  int32_t answer = az_span_size(old_span) - az_span_size(new_span);
-  AZ_PRECONDITION(answer == (int32_t)(az_span_ptr(new_span) - az_span_ptr(old_span)));
+  int32_t answer = old_span.size - new_span.size;
+  AZ_PRECONDITION(answer == (int32_t)(new_span.ptr - old_span.ptr));
   return answer;
 }
 
@@ -40,7 +40,7 @@ az_result az_iot_sas_token_get_document(
 
   az_span devices_string = AZ_SPAN_FROM_STR(SCOPE_DEVICES_STRING);
   int32_t required_length
-      = az_span_size(iothub_fqdn) + az_span_size(device_id) + az_span_size(devices_string) + 1;
+      = iothub_fqdn.size + device_id.size + devices_string.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(document, required_length);
 
@@ -81,9 +81,9 @@ az_result az_iot_sas_token_generate(
   az_span devices_string = AZ_SPAN_FROM_STR(SCOPE_DEVICES_STRING);
   az_span sig_string = AZ_SPAN_FROM_STR(SAS_TOKEN_SIG);
   az_span se_string = AZ_SPAN_FROM_STR(SAS_TOKEN_SE);
-  int32_t required_length = az_span_size(sr_string) + az_span_size(devices_string)
-      + az_span_size(sig_string) + az_span_size(se_string) + az_span_size(iothub_fqdn)
-      + az_span_size(device_id) + az_span_size(signature) + 5;
+  int32_t required_length = sr_string.size + devices_string.size
+      + sig_string.size + se_string.size + iothub_fqdn.size
+      + device_id.size + signature.size + 5;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(sas_token, required_length);
 
@@ -108,10 +108,10 @@ az_result az_iot_sas_token_generate(
   remainder = az_span_copy_uint8(remainder, EQUAL_SIGN);
   AZ_RETURN_IF_FAILED(az_span_copy_i32toa(remainder, expiry_time_secs, &remainder));
 
-  if (az_span_ptr(key_name) != NULL && az_span_size(key_name) > 0)
+  if (key_name.ptr != NULL && key_name.size > 0)
   {
     az_span skn_string = AZ_SPAN_FROM_STR(SAS_TOKEN_SKN);
-    required_length = az_span_size(skn_string) + az_span_size(key_name) + 2;
+    required_length = skn_string.size + key_name.size + 2;
 
     AZ_RETURN_IF_NOT_ENOUGH_SIZE(remainder, required_length);
 

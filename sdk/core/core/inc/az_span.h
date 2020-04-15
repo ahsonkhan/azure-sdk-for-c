@@ -31,26 +31,9 @@
  */
 typedef struct
 {
-  struct
-  {
-    uint8_t* ptr;
-    int32_t size; ///< size must be >= 0
-  } _internal;
+  uint8_t* ptr;
+  int32_t size; ///< size must be >= 0
 } az_span;
-
-/********************************  SPAN GETTERS */
-
-/**
- * @brief az_span_ptr returns the span byte buffer's starting memory address
- *
- */
-AZ_NODISCARD AZ_INLINE uint8_t* az_span_ptr(az_span span) { return span._internal.ptr; }
-
-/**
- * @brief az_span_size Returns the number of bytes within the span.
- *
- */
-AZ_NODISCARD AZ_INLINE int32_t az_span_size(az_span span) { return span._internal.size; }
 
 /********************************  CONSTRUCTORS */
 
@@ -59,10 +42,7 @@ AZ_NODISCARD AZ_INLINE int32_t az_span_size(az_span span) { return span._interna
  *
  */
 #define AZ_SPAN_NULL \
-  (az_span) \
-  { \
-    ._internal = {.ptr = NULL, .size = 0 } \
-  }
+  (az_span) { .ptr = NULL, .size = 0 }
 
 // Returns the size (in bytes) of a literal string
 // Note: Concatenating "" to S produces a compiler error if S is not a literal string
@@ -79,10 +59,7 @@ AZ_NODISCARD AZ_INLINE int32_t az_span_size(az_span span) { return span._interna
  */
 #define AZ_SPAN_LITERAL_FROM_STR(STRING_LITERAL) \
   { \
-    ._internal = { \
-      .ptr = (uint8_t*)STRING_LITERAL, \
-      .size = _az_STRING_LITERAL_LEN(STRING_LITERAL), \
-    }, \
+    .ptr = (uint8_t*)STRING_LITERAL, .size = _az_STRING_LITERAL_LEN(STRING_LITERAL) \
   }
 
 /**
@@ -108,10 +85,7 @@ AZ_NODISCARD AZ_INLINE int32_t az_span_size(az_span span) { return span._interna
 #define AZ_SPAN_FROM_BUFFER(BYTE_BUFFER) \
   (az_span) \
   { \
-    ._internal = { \
-      .ptr = (uint8_t*)BYTE_BUFFER, \
-      .size = (sizeof(BYTE_BUFFER) / _az_IS_ARRAY(BYTE_BUFFER)), \
-    }, \
+    .ptr = (uint8_t*)BYTE_BUFFER, .size = (sizeof(BYTE_BUFFER) / _az_IS_ARRAY(BYTE_BUFFER)) \
   }
 
 /**
@@ -156,8 +130,7 @@ AZ_NODISCARD az_span az_span_slice(az_span span, int32_t start_index, int32_t en
  */
 AZ_NODISCARD AZ_INLINE bool az_span_is_content_equal(az_span span1, az_span span2)
 {
-  return az_span_size(span1) == az_span_size(span2)
-      && memcmp(az_span_ptr(span1), az_span_ptr(span2), (size_t)az_span_size(span1)) == 0;
+  return span1.size == span2.size && memcmp(span1.ptr, span2.ptr, (size_t)span1.size) == 0;
 }
 
 /**
@@ -354,7 +327,7 @@ AZ_NODISCARD az_result az_span_copy_dtoa(az_span destination, double source, az_
  */
 AZ_INLINE void az_span_fill(az_span destination, uint8_t value)
 {
-  memset(az_span_ptr(destination), value, (size_t)az_span_size(destination));
+  memset(destination.ptr, value, (size_t)destination.size);
 }
 
 /******************************  SPAN PAIR  */

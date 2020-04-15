@@ -58,12 +58,12 @@ AZ_NODISCARD az_result az_iot_provisioning_client_user_name_get(
 
   const az_span* const user_agent = &(client->_internal.options.user_agent);
 
-  int32_t required_length = az_span_size(client->_internal.id_scope)
-      + az_span_size(str_registrations) + az_span_size(client->_internal.registration_id)
-      + az_span_size(provisioning_service_api_version);
-  if (az_span_size(*user_agent) > 0)
+  int32_t required_length = client->_internal.id_scope.size
+      + str_registrations.size + client->_internal.registration_id.size
+      + provisioning_service_api_version.size;
+  if (*user_agent.size > 0)
   {
-    required_length += az_span_size(*user_agent) + 1;
+    required_length += *user_agent.size + 1;
   }
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_user_name, required_length);
@@ -73,7 +73,7 @@ AZ_NODISCARD az_result az_iot_provisioning_client_user_name_get(
   remainder = az_span_copy(remainder, client->_internal.registration_id);
   remainder = az_span_copy(remainder, provisioning_service_api_version);
 
-  if (az_span_size(*user_agent) > 0)
+  if (*user_agent.size > 0)
   {
     remainder = az_span_copy_uint8(remainder, '&');
     az_span_copy(remainder, *user_agent);
@@ -94,7 +94,7 @@ AZ_NODISCARD az_result az_iot_provisioning_client_id_get(
   AZ_PRECONDITION_VALID_SPAN(mqtt_client_id, 0, false);
   AZ_PRECONDITION_NOT_NULL(out_mqtt_client_id);
 
-  int required_length = az_span_size(client->_internal.registration_id);
+  int required_length = client->_internal.registration_id.size;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_client_id, required_length);
 
@@ -118,7 +118,7 @@ AZ_NODISCARD az_result az_iot_provisioning_client_register_subscribe_topic_filte
   AZ_PRECONDITION_NOT_NULL(out_mqtt_topic_filter);
 
   int32_t required_length
-      = az_span_size(str_dps) + az_span_size(str_registrations) + az_span_size(str_res) + 1;
+      = str_dps.size + str_registrations.size + str_res.size + 1;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic_filter, required_length);
 
@@ -161,8 +161,8 @@ AZ_NODISCARD az_result az_iot_provisioning_client_register_publish_topic_get(
   AZ_PRECONDITION_VALID_SPAN(mqtt_topic, 0, false);
   AZ_PRECONDITION_NOT_NULL(out_mqtt_topic);
 
-  int32_t required_length = az_span_size(str_dps) + az_span_size(str_registrations)
-      + az_span_size(str_put_iotdps_register);
+  int32_t required_length = str_dps.size + str_registrations.size
+      + str_put_iotdps_register.size;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic, required_length);
 
@@ -190,9 +190,9 @@ AZ_NODISCARD az_result az_iot_provisioning_client_get_operation_status_publish_t
   AZ_PRECONDITION_NOT_NULL(register_response);
   AZ_PRECONDITION_VALID_SPAN(register_response->operation_id, 1, false);
 
-  int32_t required_length = az_span_size(str_dps) + az_span_size(str_registrations)
-      + az_span_size(str_get_iotdps_get_operationstatus)
-      + az_span_size(register_response->operation_id);
+  int32_t required_length = str_dps.size + str_registrations.size
+      + str_get_iotdps_get_operationstatus.size
+      + register_response->operation_id.size;
 
   AZ_RETURN_IF_NOT_ENOUGH_SIZE(mqtt_topic, required_length);
 

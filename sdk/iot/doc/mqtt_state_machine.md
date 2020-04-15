@@ -61,14 +61,14 @@ if(az_failed(az_iot_hub_client_sas_signature_get(client, unix_time + 3600, signa
     // error.
 }
 
-// Base64Encode the HMAC256 of the az_span_ptr(signature) with the Shared Access Key.
+// Base64Encode the HMAC256 of the signature.ptr with the Shared Access Key.
 
 if(az_failed(az_iot_hub_client_sas_password_get(client, base64_hmac_sha256_signature, NULL, password, &password)))
 {
     // error.
 }
 
-// Use az_span_ptr(password) and az_span_len(password).
+// Use password.ptr and az_span_len(password).
 ```
 
 ### Subscribe to topics
@@ -84,7 +84,7 @@ if(az_failed(az_iot_hub_client_c2d_subscribe_topic_filter_get(client, mqtt_topic
     // error.
 }
 
-// Use az_span_ptr(mqtt_topic_filter) and az_span_len(mqtt_topic_filter).
+// Use mqtt_topic_filter.ptr and az_span_len(mqtt_topic_filter).
 ```
 
 ### Sending APIs
@@ -100,7 +100,7 @@ if(az_failed(az_iot_hub_client_telemetry_publish_topic_get(client, NULL, mqtt_to
     // error.
 }
 
-// Use az_span_ptr(mqtt_topic) and az_span_len(mqtt_topic) to create an MQTT Publish message.
+// Use mqtt_topic.ptr and az_span_len(mqtt_topic) to create an MQTT Publish message.
 ```
 
 ### Receiving APIs
