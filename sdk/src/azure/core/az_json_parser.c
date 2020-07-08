@@ -3,10 +3,12 @@
 
 #include "az_json_private.h"
 #include "az_span_private.h"
+#include <azure/core/internal/az_span_internal.h>
 
 #include <azure/core/az_precondition.h>
 
 #include <ctype.h>
+#include <stdlib.h>
 
 #include <azure/core/_az_cfg.h>
 
@@ -27,7 +29,43 @@ AZ_NODISCARD az_result az_json_parser_init(
     },
     ._internal = {
       .json_buffer = json_buffer,
+      .json_buffers = &AZ_SPAN_NULL,
+      .number_of_buffers = 1,
+      .buffer_index = 0,
       .bytes_consumed = 0,
+      .total_bytes_consumed = 0,
+      .is_complex_json = false,
+      .bit_stack = { 0 },
+      .options = options == NULL ? az_json_parser_options_default() : *options,
+    },
+  };
+  return AZ_OK;
+}
+
+AZ_NODISCARD az_result az_json_parser_chunked_init(
+    az_json_parser* json_parser,
+    az_span json_buffers[],
+    int32_t number_of_buffers,
+    az_json_parser_options const* options)
+{
+  _az_PRECONDITION(number_of_buffers >= 1);
+  _az_PRECONDITION(az_span_size(json_buffers[0]) >= 1);
+
+  *json_parser = (az_json_parser){
+    .token = (az_json_token){
+      .kind = AZ_JSON_TOKEN_NONE,
+      .slice = AZ_SPAN_NULL,
+      ._internal = {
+        .string_has_escaped_chars = false,
+      },
+    },
+    ._internal = {
+      .json_buffer = json_buffers[0],
+      .json_buffers = json_buffers,
+      .number_of_buffers = number_of_buffers,
+      .buffer_index = 0,
+      .bytes_consumed = 0,
+      .total_bytes_consumed = 0,
       .is_complex_json = false,
       .bit_stack = { 0 },
       .options = options == NULL ? az_json_parser_options_default() : *options,
@@ -48,20 +86,57 @@ static void _az_json_parser_update_state(
     az_json_parser* json_parser,
     az_json_token_kind token_kind,
     az_span token_slice,
+    int32_t current_segment_consumed,
     int32_t consumed)
 {
   json_parser->token.kind = token_kind;
   json_parser->token.slice = token_slice;
-  json_parser->_internal.bytes_consumed += consumed;
+  json_parser->_internal.bytes_consumed += current_segment_consumed;
+  json_parser->_internal.total_bytes_consumed += consumed;
+}
+
+AZ_NODISCARD static az_result _az_json_parser_get_next_buffer(
+    az_json_parser* json_parser,
+    az_span* remaining)
+{
+  json_parser->_internal.buffer_index++;
+
+  // If we only had one buffer, or we ran out of the set of discontiguous buffers, return error.
+  if (json_parser->_internal.buffer_index >= json_parser->_internal.number_of_buffers)
+  {
+    return AZ_ERROR_EOF;
+  }
+
+  json_parser->_internal.json_buffer
+      = json_parser->_internal.json_buffers[json_parser->_internal.buffer_index];
+  json_parser->_internal.bytes_consumed = 0;
+
+  *remaining = _get_remaining_json(json_parser);
+
+  return AZ_OK;
 }
 
 AZ_NODISCARD static az_span _az_json_parser_skip_whitespace(az_json_parser* json_parser)
 {
+  az_span json = { 0 };
   az_span remaining = _get_remaining_json(json_parser);
-  az_span json = _az_span_trim_white_space_from_start(remaining);
 
-  // Find out how many whitespace characters were trimmed.
-  json_parser->_internal.bytes_consumed += az_span_size(remaining) - az_span_size(json);
+  while (true)
+  {
+    json = _az_span_trim_white_space_from_start(remaining);
+
+    // Find out how many whitespace characters were trimmed.
+    int32_t consumed = _az_span_diff(remaining, json);
+
+    json_parser->_internal.bytes_consumed += consumed;
+    json_parser->_internal.total_bytes_consumed += consumed;
+
+    if (az_span_size(json) >= 1
+        || _az_json_parser_get_next_buffer(json_parser, &remaining) != AZ_OK)
+    {
+      break;
+    }
+  }
 
   return json;
 }
@@ -81,7 +156,7 @@ AZ_NODISCARD static az_result _az_json_parser_process_container_end(
 
   az_span token = _get_remaining_json(json_parser);
   _az_json_stack_pop(&json_parser->_internal.bit_stack);
-  _az_json_parser_update_state(json_parser, token_kind, az_span_slice(token, 0, 1), 1);
+  _az_json_parser_update_state(json_parser, token_kind, az_span_slice(token, 0, 1), 1, 1);
   return AZ_OK;
 }
 
@@ -100,7 +175,7 @@ AZ_NODISCARD static az_result _az_json_parser_process_container_start(
   az_span token = _get_remaining_json(json_parser);
 
   _az_json_stack_push(&json_parser->_internal.bit_stack, container_kind);
-  _az_json_parser_update_state(json_parser, token_kind, az_span_slice(token, 0, 1), 1);
+  _az_json_parser_update_state(json_parser, token_kind, az_span_slice(token, 0, 1), 1, 1);
   return AZ_OK;
 }
 
@@ -497,22 +572,38 @@ AZ_NODISCARD static az_result _az_json_parser_process_literal(
 {
   az_span token = _get_remaining_json(json_parser);
 
-  int32_t const token_size = az_span_size(token);
+  int32_t token_size = az_span_size(token);
   int32_t const expected_literal_size = az_span_size(literal);
 
-  // Return EOF because the token is smaller than the expected literal.
-  if (token_size < expected_literal_size)
+  int32_t already_matched = 0;
+
+  int32_t max_comparable_size = 0;
+  while (true)
   {
-    return AZ_ERROR_EOF;
+    max_comparable_size = min(token_size, expected_literal_size - already_matched);
+
+    // Return if the subslice that can be compared contains a mismatch.
+    if (!az_span_is_content_equal(
+            az_span_slice(token, 0, max_comparable_size),
+            az_span_slice(literal, already_matched, max_comparable_size)))
+    {
+      return AZ_ERROR_PARSER_UNEXPECTED_CHAR;
+    }
+    already_matched += max_comparable_size;
+
+    if (already_matched == expected_literal_size)
+    {
+      break;
+    }
+
+    // Return EOF because the token is smaller than the expected literal.
+    AZ_RETURN_IF_FAILED(_az_json_parser_get_next_buffer(json_parser, &token));
+    token_size = az_span_size(token);
   }
 
-  token = az_span_slice(token, 0, expected_literal_size);
-  if (az_span_is_content_equal(token, literal))
-  {
-    _az_json_parser_update_state(json_parser, kind, token, expected_literal_size);
-    return AZ_OK;
-  }
-  return AZ_ERROR_PARSER_UNEXPECTED_CHAR;
+  _az_json_parser_update_state(
+      json_parser, kind, token, max_comparable_size, expected_literal_size);
+  return AZ_OK;
 }
 
 AZ_NODISCARD static az_result _az_json_parser_process_value(
@@ -551,7 +642,7 @@ AZ_NODISCARD static az_result _az_json_parser_read_first_token(
   {
     _az_json_stack_push(&json_parser->_internal.bit_stack, _az_JSON_STACK_OBJECT);
     _az_json_parser_update_state(
-        json_parser, AZ_JSON_TOKEN_BEGIN_OBJECT, az_span_slice(json, 0, 1), 1);
+        json_parser, AZ_JSON_TOKEN_BEGIN_OBJECT, az_span_slice(json, 0, 1), 1, 1);
     json_parser->_internal.is_complex_json = true;
     return AZ_OK;
   }
@@ -559,7 +650,7 @@ AZ_NODISCARD static az_result _az_json_parser_read_first_token(
   {
     _az_json_stack_push(&json_parser->_internal.bit_stack, _az_JSON_STACK_ARRAY);
     _az_json_parser_update_state(
-        json_parser, AZ_JSON_TOKEN_BEGIN_ARRAY, az_span_slice(json, 0, 1), 1);
+        json_parser, AZ_JSON_TOKEN_BEGIN_ARRAY, az_span_slice(json, 0, 1), 1, 1);
     json_parser->_internal.is_complex_json = true;
     return AZ_OK;
   }

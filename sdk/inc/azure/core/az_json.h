@@ -416,7 +416,11 @@ typedef struct
   struct
   {
     az_span json_buffer;
+    az_span* json_buffers;
+    int32_t number_of_buffers;
+    int32_t buffer_index;
     int32_t bytes_consumed;
+    int32_t total_bytes_consumed;
     bool is_complex_json;
     _az_json_bit_stack bit_stack;
     az_json_parser_options options;
@@ -435,11 +439,37 @@ typedef struct
  *
  * @return An #az_result value indicating the result of the operation:
  *         - #AZ_OK if the az_json_parser is initialized successfully
- *         - #AZ_ERROR_EOF if the provided json buffer is empty
+ *
+ * @remarks The provided json buffer must not be empty, as that is invalid JSON.
  */
 AZ_NODISCARD az_result az_json_parser_init(
     az_json_parser* json_parser,
     az_span json_buffer,
+    az_json_parser_options const* options);
+
+/**
+ * @brief Initializes an #az_json_parser to parse the JSON payload contained within the provided
+ * buffer.
+ *
+ * @param[out] json_parser A pointer to an #az_json_parser instance to initialize.
+ * @param[in] json_buffers An array of non-contiguous byte buffers, as spans, containing the JSON
+ * text to parse.
+ * @param[in] number_of_buffers The number of buffer segments provided, i.e. the length of the \p
+ * json_buffers array.
+ * @param[in] options __[nullable]__ A reference to an #az_json_parser_options
+ * structure which defines custom behavior of the #az_json_parser. If `NULL` is passed, the parser
+ * will use the default options (i.e. #az_json_parser_options_default()).
+ *
+ * @return An #az_result value indicating the result of the operation:
+ *         - #AZ_OK if the az_json_parser is initialized successfully
+ *
+ * @remarks The provided array of json buffers must not be empty, as that is invalid JSON, and
+ * therefore \p number_of_buffers must also be greater than 0.
+ */
+AZ_NODISCARD az_result az_json_parser_chunked_init(
+    az_json_parser* json_parser,
+    az_span json_buffers[],
+    int32_t number_of_buffers,
     az_json_parser_options const* options);
 
 /**
