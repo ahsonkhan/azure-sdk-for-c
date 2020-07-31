@@ -119,7 +119,9 @@ AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
 
   if (!isdigit(next_byte))
   {
-    if (next_byte != '+')
+    // There must be another byte after a sign.
+    // The loop below checks that it must be a digit.
+    if (next_byte != '+' || span_size < 2)
     {
       return AZ_ERROR_UNEXPECTED_CHAR;
     }
@@ -173,52 +175,37 @@ AZ_NODISCARD az_result az_span_atoi64(az_span source, int64_t* out_number)
     return AZ_ERROR_UNEXPECTED_CHAR;
   }
 
-  // If the first character is not a digit, - sign, or an optional + sign, return error.
   int32_t starting_index = 0;
   uint8_t* source_ptr = az_span_ptr(source);
-  uint8_t next_byte = source_ptr[0];
   int32_t sign = 1;
 
-  if (!isdigit(next_byte))
+  // Using unsigned int64 to avoid overflow when we increment for negative numbers
+  uint64_t abs_int64_max = INT64_MAX;
+
+  if (source_ptr[0] == '-')
   {
-    if (next_byte != '+')
-    {
-      if (next_byte != '-')
-      {
-        return AZ_ERROR_UNEXPECTED_CHAR;
-      }
-      sign = -1;
-    }
+    sign = -1;
     starting_index++;
+
+    // If the number is negative, it can be as large as -1 * INT64_MIN, which is one larger than
+    // INT64_MAX
+    abs_int64_max++;
+
+    // There must be another byte after a sign and it must be a digit.
+    if (span_size < 2 || !isdigit(source_ptr[1]))
+    {
+      return AZ_ERROR_UNEXPECTED_CHAR;
+    }
   }
 
-  // if sign < 0, (-1 * sign + 1) / 2 = 1
-  // else, (-1 * sign + 1) / 2 = 0
-  // This is necessary to correctly account for the fact that the absolute value of INT64_MIN is 1
-  // more than than the absolute value of INT64_MAX.
-  uint64_t sign_factor = (uint64_t)(-1 * sign + 1) / 2;
+  uint64_t placeholder = 0;
+  AZ_RETURN_IF_FAILED(az_span_atou64(az_span_slice_to_end(source, starting_index), &placeholder));
 
-  // Using unsigned int while parsing to account for potential overflow.
-  uint64_t value = 0;
-
-  for (int32_t i = starting_index; i < span_size; ++i)
+  if (placeholder > abs_int64_max)
   {
-    next_byte = source_ptr[i];
-    if (!isdigit(next_byte))
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-    uint64_t const d = (uint64_t)next_byte - '0';
-
-    if ((uint64_t)(INT64_MAX - d + sign_factor) / 10 < value)
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-
-    value = value * 10 + d;
+    return AZ_ERROR_UNEXPECTED_CHAR;
   }
-
-  *out_number = (int64_t)value * sign;
+  *out_number = (int64_t)placeholder * sign;
   return AZ_OK;
 }
 
