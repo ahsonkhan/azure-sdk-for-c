@@ -150,49 +150,14 @@ AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
 
 AZ_NODISCARD az_result az_span_atou32(az_span source, uint32_t* out_number)
 {
-  _az_PRECONDITION_VALID_SPAN(source, 1, false);
-  _az_PRECONDITION_NOT_NULL(out_number);
+  uint64_t placeholder = 0;
+  AZ_RETURN_IF_FAILED(az_span_atou64(source, &placeholder));
 
-  int32_t const span_size = az_span_size(source);
-
-  if (span_size < 1)
+  if (placeholder > UINT32_MAX)
   {
     return AZ_ERROR_UNEXPECTED_CHAR;
   }
-
-  // If the first character is not a digit or an optional + sign, return error.
-  int32_t starting_index = 0;
-  uint8_t* source_ptr = az_span_ptr(source);
-  uint8_t next_byte = source_ptr[0];
-
-  if (!isdigit(next_byte))
-  {
-    if (next_byte != '+')
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-    starting_index++;
-  }
-
-  uint32_t value = 0;
-
-  for (int32_t i = starting_index; i < span_size; ++i)
-  {
-    next_byte = source_ptr[i];
-    if (!isdigit(next_byte))
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-    uint32_t const d = (uint32_t)next_byte - '0';
-    if ((UINT32_MAX - d) / 10 < value)
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-
-    value = value * 10 + d;
-  }
-
-  *out_number = value;
+  *out_number = (uint32_t)placeholder;
   return AZ_OK;
 }
 
@@ -259,62 +224,14 @@ AZ_NODISCARD az_result az_span_atoi64(az_span source, int64_t* out_number)
 
 AZ_NODISCARD az_result az_span_atoi32(az_span source, int32_t* out_number)
 {
-  _az_PRECONDITION_VALID_SPAN(source, 1, false);
-  _az_PRECONDITION_NOT_NULL(out_number);
+  int64_t placeholder = 0;
+  AZ_RETURN_IF_FAILED(az_span_atoi64(source, &placeholder));
 
-  int32_t const span_size = az_span_size(source);
-
-  if (span_size < 1)
+  if (placeholder > INT32_MAX || placeholder < INT32_MIN)
   {
     return AZ_ERROR_UNEXPECTED_CHAR;
   }
-
-  // If the first character is not a digit, - sign, or an optional + sign, return error.
-  int32_t starting_index = 0;
-  uint8_t* source_ptr = az_span_ptr(source);
-  uint8_t next_byte = source_ptr[0];
-  int32_t sign = 1;
-
-  if (!isdigit(next_byte))
-  {
-    if (next_byte != '+')
-    {
-      if (next_byte != '-')
-      {
-        return AZ_ERROR_UNEXPECTED_CHAR;
-      }
-      sign = -1;
-    }
-    starting_index++;
-  }
-
-  // if sign < 0, (-1 * sign + 1) / 2 = 1
-  // else, (-1 * sign + 1) / 2 = 0
-  // This is necessary to correctly account for the fact that the absolute value of INT32_MIN is 1
-  // more than than the absolute value of INT32_MAX.
-  uint32_t sign_factor = (uint32_t)(-1 * sign + 1) / 2;
-
-  // Using unsigned int while parsing to account for potential overflow.
-  uint32_t value = 0;
-
-  for (int32_t i = starting_index; i < span_size; ++i)
-  {
-    next_byte = source_ptr[i];
-    if (!isdigit(next_byte))
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-    uint32_t const d = (uint32_t)next_byte - '0';
-
-    if ((uint32_t)(INT32_MAX - d + sign_factor) / 10 < value)
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-
-    value = value * 10 + d;
-  }
-
-  *out_number = (int32_t)value * sign;
+  *out_number = (int32_t)placeholder;
   return AZ_OK;
 }
 
