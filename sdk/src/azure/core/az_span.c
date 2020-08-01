@@ -100,7 +100,35 @@ AZ_NODISCARD bool az_span_is_content_equal_ignoring_case(az_span span1, az_span 
   return true;
 }
 
-AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
+AZ_INLINE az_result
+az_span_atou64_helper(az_span source, uint64_t* out_number, uint64_t const max_value)
+{
+  int32_t const span_size = az_span_size(source);
+  uint8_t* source_ptr = az_span_ptr(source);
+  uint64_t value = 0;
+
+  for (int32_t i = 0; i < span_size; ++i)
+  {
+    uint8_t next_byte = source_ptr[i];
+    if (!isdigit(next_byte))
+    {
+      return AZ_ERROR_UNEXPECTED_CHAR;
+    }
+    uint64_t const d = (uint64_t)next_byte - '0';
+    if ((max_value - d) / 10 < value)
+    {
+      return AZ_ERROR_UNEXPECTED_CHAR;
+    }
+
+    value = value * 10 + d;
+  }
+
+  *out_number = value;
+  return AZ_OK;
+}
+
+AZ_INLINE az_result
+az_span_atou64_helper_internal(az_span source, uint64_t* out_number, uint64_t const max_value)
 {
   _az_PRECONDITION_VALID_SPAN(source, 1, false);
   _az_PRECONDITION_NOT_NULL(out_number);
@@ -114,9 +142,7 @@ AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
 
   // If the first character is not a digit or an optional + sign, return error.
   int32_t starting_index = 0;
-  uint8_t* source_ptr = az_span_ptr(source);
-  uint8_t next_byte = source_ptr[0];
-
+  uint8_t next_byte = az_span_ptr(source)[0];
   if (!isdigit(next_byte))
   {
     // There must be another byte after a sign.
@@ -128,42 +154,24 @@ AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
     starting_index++;
   }
 
-  uint64_t value = 0;
+  return az_span_atou64_helper(az_span_slice_to_end(source, starting_index), out_number, max_value);
+}
 
-  for (int32_t i = starting_index; i < span_size; ++i)
-  {
-    next_byte = source_ptr[i];
-    if (!isdigit(next_byte))
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-    uint64_t const d = (uint64_t)next_byte - '0';
-    if ((UINT64_MAX - d) / 10 < value)
-    {
-      return AZ_ERROR_UNEXPECTED_CHAR;
-    }
-
-    value = value * 10 + d;
-  }
-
-  *out_number = value;
-  return AZ_OK;
+AZ_NODISCARD az_result az_span_atou64(az_span source, uint64_t* out_number)
+{
+  return az_span_atou64_helper_internal(source, out_number, UINT64_MAX);
 }
 
 AZ_NODISCARD az_result az_span_atou32(az_span source, uint32_t* out_number)
 {
   uint64_t placeholder = 0;
-  AZ_RETURN_IF_FAILED(az_span_atou64(source, &placeholder));
-
-  if (placeholder > UINT32_MAX)
-  {
-    return AZ_ERROR_UNEXPECTED_CHAR;
-  }
+  AZ_RETURN_IF_FAILED(az_span_atou64_helper_internal(source, &placeholder, UINT32_MAX));
   *out_number = (uint32_t)placeholder;
   return AZ_OK;
 }
 
-AZ_NODISCARD az_result az_span_atoi64(az_span source, int64_t* out_number)
+AZ_INLINE az_result
+az_span_atoi64_helper_internal(az_span source, int64_t* out_number, uint64_t const max_value)
 {
   _az_PRECONDITION_VALID_SPAN(source, 1, false);
   _az_PRECONDITION_NOT_NULL(out_number);
@@ -175,49 +183,53 @@ AZ_NODISCARD az_result az_span_atoi64(az_span source, int64_t* out_number)
     return AZ_ERROR_UNEXPECTED_CHAR;
   }
 
-  int32_t starting_index = 0;
-  uint8_t* source_ptr = az_span_ptr(source);
-  int32_t sign = 1;
-
   // Using unsigned int64 to avoid overflow when we increment for negative numbers
-  uint64_t abs_int64_max = INT64_MAX;
+  uint64_t abs_int_max = max_value;
 
-  if (source_ptr[0] == '-')
+  // If the first character is not a digit, a - sign, or an optional + sign, return error.
+  int32_t sign = 1;
+  int32_t starting_index = 0;
+  uint8_t next_byte = az_span_ptr(source)[0];
+  if (!isdigit(next_byte))
   {
-    sign = -1;
-    starting_index++;
-
-    // If the number is negative, it can be as large as -1 * INT64_MIN, which is one larger than
-    // INT64_MAX
-    abs_int64_max++;
-
-    // There must be another byte after a sign and it must be a digit.
-    if (span_size < 2 || !isdigit(source_ptr[1]))
+    if (next_byte == '-')
+    {
+      sign = -1;
+      // If the number is negative, it can be as large as -1 * INT_MIN, which is one larger than
+      // INT_MAX
+      abs_int_max++;
+    }
+    else if (next_byte != '+')
     {
       return AZ_ERROR_UNEXPECTED_CHAR;
     }
+
+    // There must be another byte after a sign.
+    // The loop below checks that it must be a digit.
+    if (span_size < 2)
+    {
+      return AZ_ERROR_UNEXPECTED_CHAR;
+    }
+
+    starting_index++;
   }
 
   uint64_t placeholder = 0;
-  AZ_RETURN_IF_FAILED(az_span_atou64(az_span_slice_to_end(source, starting_index), &placeholder));
-
-  if (placeholder > abs_int64_max)
-  {
-    return AZ_ERROR_UNEXPECTED_CHAR;
-  }
+  AZ_RETURN_IF_FAILED(az_span_atou64_helper(
+      az_span_slice_to_end(source, starting_index), &placeholder, abs_int_max));
   *out_number = (int64_t)placeholder * sign;
   return AZ_OK;
+}
+
+AZ_NODISCARD az_result az_span_atoi64(az_span source, int64_t* out_number)
+{
+  return az_span_atoi64_helper_internal(source, out_number, INT64_MAX);
 }
 
 AZ_NODISCARD az_result az_span_atoi32(az_span source, int32_t* out_number)
 {
   int64_t placeholder = 0;
-  AZ_RETURN_IF_FAILED(az_span_atoi64(source, &placeholder));
-
-  if (placeholder > INT32_MAX || placeholder < INT32_MIN)
-  {
-    return AZ_ERROR_UNEXPECTED_CHAR;
-  }
+  AZ_RETURN_IF_FAILED(az_span_atoi64_helper_internal(source, &placeholder, INT32_MAX));
   *out_number = (int32_t)placeholder;
   return AZ_OK;
 }
@@ -256,7 +268,8 @@ AZ_NODISCARD az_result az_span_atod(az_span source, double* out_number)
     return AZ_ERROR_UNEXPECTED_CHAR;
   }
 
-  // Stack based string to allow thread-safe mutation by _az_span_ato_number_helper
+  // Stack based string to allow thread-safe mutation. The length is 8 to allow space for the
+  // null-terminating character.
   char format[8] = "%00lf%n";
 
   // Starting at 1 to skip the '%' character
