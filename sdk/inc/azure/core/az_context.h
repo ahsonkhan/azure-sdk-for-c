@@ -24,6 +24,9 @@
 
 typedef struct az_context az_context;
 
+// root context is one where the parent is null
+// az_context_application is not the only root
+
 /**
  * @brief A context is a node within a tree that represents expiration times and key/value
  * pairs.
@@ -67,6 +70,18 @@ az_context_create_with_expiration(az_context const* parent, int64_t expiration)
                            .expiration = expiration } };
 }
 
+
+// If parent is null, we are at a root.
+// az_context_application is a root, not the only root.
+
+// This is a new root, separate from az_context_application.
+// Golang allows multiple roots.
+az_context context = az_context_create_with_value(NULL, NULL, NULL);
+
+// Today: Precondition - NULL not allowed.
+// Later, allow null, and multiple roots.
+az_context child = az_context_create_with_value(&az_context_application, NULL, NULL);
+
 /**
  * @brief Creates a new key/value az_context node that is a child of the specified parent.
  *
@@ -88,12 +103,13 @@ az_context_create_with_value(az_context const* parent, void const* key, void con
 /**
  * @brief Cancels the specified #az_context node; this cancels all the child nodes as well.
  *
- * @param[in] context A pointer to the #az_context node to be canceled; passing `NULL` cancels the
- * root #az_context.
+ * @param[in] context A pointer to the #az_context node to be canceled.
  */
 AZ_INLINE void az_context_cancel(az_context* context)
 {
-  context = ((context != NULL) ? context : &az_context_application);
+    // NULL context is not allowed - make a precondition
+
+  //context = ((context != NULL) ? context : &az_context_application);
   context->_internal.expiration = 0; // The beginning of time
 }
 

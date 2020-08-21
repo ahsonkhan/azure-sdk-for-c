@@ -33,6 +33,9 @@ AZ_NODISCARD int64_t az_context_get_expiration(az_context const* context)
 AZ_NODISCARD az_result
 az_context_get_value(az_context const* context, void const* key, void const** out_value)
 {
+    // precondition, key can't be null
+    // when preconditions are turned off, runtime return item not found
+
   for (; context != NULL; context = context->_internal.parent)
   {
     if (context->_internal.key == key)
