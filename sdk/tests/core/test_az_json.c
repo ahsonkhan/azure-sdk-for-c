@@ -1417,6 +1417,7 @@ static void test_json_reader_incomplete(void** state)
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("f"), AZ_ERROR_UNEXPECTED_END);
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("fals"), AZ_ERROR_UNEXPECTED_END);
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("\"name"), AZ_ERROR_UNEXPECTED_END);
+  test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("\"nam\\u006"), AZ_ERROR_UNEXPECTED_END);
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("-"), AZ_ERROR_UNEXPECTED_END);
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("-123."), AZ_ERROR_UNEXPECTED_END);
   test_json_reader_invalid_helper(AZ_SPAN_FROM_STR("-123.1e"), AZ_ERROR_UNEXPECTED_END);
