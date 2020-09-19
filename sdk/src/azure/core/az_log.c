@@ -16,12 +16,54 @@
 
 #ifndef AZ_NO_LOGGING
 
-static az_log_classification const* volatile _az_log_classifications = NULL;
-static az_log_message_fn volatile _az_log_message_callback = NULL;
+#define LOG_CLASSIFICATION_MAX_SIZE 32
 
-void az_log_set_classifications(az_log_classification const classifications[])
+static az_log_classification volatile _az_log_classifications[LOG_CLASSIFICATION_MAX_SIZE] = {
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+  AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST, AZ_LOG_END_OF_LIST,
+};
+static az_log_message_fn volatile _az_log_message_callback = NULL;
+static bool volatile _az_log_everything = true;
+
+az_result az_log_set_classifications(az_log_classification const classifications, int32_t length)
 {
-  _az_log_classifications = classifications;
+  if (classifications == NULL)
+  {
+    _az_log_everything = true;
+    return AZ_OK;
+  }
+
+  int32_t i = 0;
+  for (; i < LOG_CLASSIFICATION_MAX_SIZE; i++)
+  {
+    if (classifications[i] == AZ_LOG_END_OF_LIST)
+    {
+      break;
+    }
+  }
+
+  if (i == LOG_CLASSIFICATION_MAX_SIZE || classifications[i] != AZ_LOG_END_OF_LIST)
+  {
+    return AZ_ERROR_ARG;
+  }
+
+  _az_log_classifications[i] = AZ_LOG_END_OF_LIST;
+
+  for (int32_t j = i - 1; j >= 0; j--)
+  {
+    _az_log_classifications[j] = classifications[j];
+  }
+
+  _az_log_classifications[LOG_CLASSIFICATION_MAX_SIZE - 1] = AZ_LOG_END_OF_LIST;
+
+  _az_log_everything = false;
+  return AZ_OK;
 }
 
 void az_log_set_callback(az_log_message_fn az_log_message_callback)
@@ -41,26 +83,32 @@ static bool _az_log_write_engine(bool log_it, az_log_classification classificati
 {
   // Copy the volatile fields to local variables so that they don't change within this function
   az_log_message_fn const callback = _az_log_message_callback;
-  az_log_classification const* classifications = _az_log_classifications;
 
-  if (callback == NULL)
+  if (callback == NULL || classification == AZ_LOG_END_OF_LIST)
   {
     // If no one is listening, don't attempt to log.
     return false;
   }
 
-  if (classifications == NULL)
+  if (_az_log_everything)
   {
-    // If the user hasn't registered any classifications, then we log everything.
-    classifications
-        = &classification; // We don't need AZ_LOG_END_OF_LIST to be there, as very first comparison
-                           // is going to succeed and return from the function.
+    if (log_it)
+    {
+      callback(classification, message);
+    }
+
+    return true;
   }
 
-  for (az_log_classification const* cls = classifications; *cls != AZ_LOG_END_OF_LIST; ++cls)
+  for (int32_t i = 0; i < LOG_CLASSIFICATION_MAX_SIZE; i++)
   {
+    if (_az_log_classifications[i] == AZ_LOG_END_OF_LIST)
+    {
+      break;
+    }
+
     // If this message's classification is in the customer-provided list, we should log it.
-    if (*cls == classification)
+    if (_az_log_classifications[i] == classification)
     {
       if (log_it)
       {

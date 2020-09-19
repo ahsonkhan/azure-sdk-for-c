@@ -92,9 +92,9 @@ typedef void (*az_log_message_fn)(az_log_classification classification, az_span 
  * environment is undefined.
  */
 #ifndef AZ_NO_LOGGING
-void az_log_set_classifications(az_log_classification const classifications[]);
+az_result az_log_set_classifications(az_log_classification const classifications[]);
 #else
-AZ_INLINE void az_log_set_classifications(az_log_classification const classifications[])
+AZ_INLINE az_result az_log_set_classifications(az_log_classification const classifications[])
 {
   (void)classifications;
 }
